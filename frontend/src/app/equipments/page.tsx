@@ -22,8 +22,9 @@ export default function EquipmentsPage() {
           id: 1,
           name: "Tronçonneuse professionnelle",
           description: "Tronçonneuse à essence de qualité professionnelle, idéale pour les gros travaux forestiers.",
-          imageURI: "/file.svg",
+          imageUrl: "/file.svg",
           dailyRate: "0.5",
+          deposit: "1.0",
           isAvailable: true,
           owner: "0x1234567890123456789012345678901234567890",
           createdAt: Date.now() - 2592000000, // 30 jours avant
@@ -32,8 +33,9 @@ export default function EquipmentsPage() {
           id: 2,
           name: "Perforateur industriel",
           description: "Perforateur industriel puissant capable de percer du béton et de la pierre.",
-          imageURI: "/window.svg",
+          imageUrl: "/window.svg",
           dailyRate: "0.3",
+          deposit: "0.6",
           isAvailable: true,
           owner: "0x1234567890123456789012345678901234567890",
           createdAt: Date.now() - 2592000000, // 30 jours avant
@@ -42,8 +44,9 @@ export default function EquipmentsPage() {
           id: 3,
           name: "Échafaudage modulaire",
           description: "Système d'échafaudage modulaire en aluminium, facile à monter et très stable.",
-          imageURI: "/globe.svg",
+          imageUrl: "/globe.svg",
           dailyRate: "0.8",
+          deposit: "1.5",
           isAvailable: false,
           owner: "0x9876543210987654321098765432109876543210",
           createdAt: Date.now() - 2592000000, // 30 jours avant
