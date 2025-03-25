@@ -31,11 +31,20 @@ blockchain-renting/
 │   │   │   ├── equipments/ # Composants liés aux équipements
 │   │   │   ├── rentals/  # Composants liés aux locations
 │   │   │   └── ui/       # Composants UI génériques
+│   │   │       └── Layout.tsx # Layout principal avec navbar et footer
 │   │   ├── lib/          # Bibliothèques et hooks
 │   │   ├── types/        # Définitions de types TypeScript
 │   │   └── utils/        # Fonctions utilitaires
 └── scripts/              # Scripts utilitaires
 ```
+
+## Structure de l'application
+
+L'application utilise une structure de layout globale qui comprend :
+
+- Un layout principal (`components/ui/Layout.tsx`) qui contient la navbar et le footer
+- Ce layout est appliqué à toutes les pages via le `app/layout.tsx`
+- Toutes les pages s'affichent à l'intérieur de ce layout
 
 ## Fonctionnalités
 

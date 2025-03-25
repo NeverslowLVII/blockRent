@@ -4,18 +4,25 @@ import { ReactNode } from 'react';
 import { useContracts } from '@/lib/hooks/useContracts';
 import { formatAddress } from '@/utils/formatters';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { isConnected, connect, account, disconnect } = useContracts();
+  const { isConnected, connect, account, disconnect, isLoading } = useContracts();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header avec navigation */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm fixed w-full top-0 z-10 border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-10">
@@ -35,29 +42,39 @@ export default function Layout({ children }: LayoutProps) {
                 >
                   Mes locations
                 </Link>
+                {isConnected && mounted && (
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-600 hover:text-blue-600 transition font-medium"
+                  >
+                    Tableau de bord
+                  </Link>
+                )}
               </nav>
             </div>
 
             <div>
-              {isConnected ? (
-                <div className="flex items-center gap-4">
-                  <span className="hidden md:block text-sm text-gray-600 bg-gray-100 py-1 px-3 rounded-full">
-                    {formatAddress(account || '')}
-                  </span>
+              {mounted && !isLoading && (
+                isConnected ? (
+                  <div className="flex items-center gap-4">
+                    <span className="hidden md:block text-sm text-gray-600 bg-gray-100 py-1 px-3 rounded-full">
+                      {formatAddress(account || '')}
+                    </span>
+                    <button
+                      onClick={disconnect}
+                      className="text-sm py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition font-medium"
+                    >
+                      Déconnecter
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={disconnect}
-                    className="text-sm py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition font-medium"
+                    onClick={connect}
+                    className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
                   >
-                    Déconnecter
+                    Connecter
                   </button>
-                </div>
-              ) : (
-                <button
-                  onClick={connect}
-                  className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
-                >
-                  Connecter
-                </button>
+                )
               )}
             </div>
           </div>
@@ -98,7 +115,7 @@ export default function Layout({ children }: LayoutProps) {
       </div>
       
       {/* Contenu principal */}
-      <main className="flex-grow container mx-auto px-4 py-8 mb-16 md:mb-0">
+      <main className="flex-grow container mx-auto px-4 py-8 mb-16 md:mb-0 mt-20">
         {children}
       </main>
       

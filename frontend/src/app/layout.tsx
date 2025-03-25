@@ -2,8 +2,13 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import type { Metadata } from "next";
+import Layout from '@/components/ui/Layout'
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap'
+});
 
 export const metadata: Metadata = {
   title: "BlockRent - Location d'équipements sur blockchain",
@@ -16,9 +21,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
+    <html lang="fr" className={`${inter.variable}`}>
+      <body>
+        <Providers>
+          {/* 
+            Layout contient déjà le header/navbar et le footer global
+            Ne pas ajouter de navbar ou footer dans les pages individuelles
+          */}
+          <Layout>
+            {children}
+          </Layout>
+        </Providers>
       </body>
     </html>
   );
