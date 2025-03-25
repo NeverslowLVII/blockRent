@@ -3,7 +3,14 @@
 import { Rental } from '@/types';
 import { formatPrice, formatDate } from '@/utils/formatters';
 import Link from 'next/link';
-import StatusBadge from '../ui/StatusBadge';
+
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface RentalCardProps {
   rental: Rental;
@@ -21,56 +28,77 @@ export default function RentalCard({ rental, onCancel, onMarkReturned }: RentalC
     return 'confirmed';
   };
 
+  // Déterminer la variante du badge en fonction du statut
+  const getBadgeVariant = () => {
+    switch (getStatus()) {
+      case 'cancelled': return 'destructive';
+      case 'returned': return 'default';
+      case 'completed': return 'secondary';
+      case 'pending': return 'outline';
+      case 'confirmed': return 'default';
+      default: return 'default';
+    }
+  };
+
+  // Traduire le statut en français
+  const getStatusText = () => {
+    switch (getStatus()) {
+      case 'cancelled': return 'Annulée';
+      case 'returned': return 'Retournée';
+      case 'completed': return 'Terminée';
+      case 'pending': return 'En attente';
+      case 'confirmed': return 'Confirmée';
+      default: return 'Inconnue';
+    }
+  };
+
   return (
-    <div className="border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition">
-      <div className="p-6">
+    <Card>
+      <CardContent className="pt-6">
         <div className="flex flex-col sm:flex-row justify-between mb-4">
           <div>
-            <h2 className="text-xl font-semibold mb-2 flex items-center">
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-3">
               Location #{rental.id}
-              <div className="ml-3">
-                <StatusBadge status={getStatus()} />
-              </div>
+              <Badge variant={getBadgeVariant()}>{getStatusText()}</Badge>
             </h2>
             <p className="text-gray-600">Équipement #{rental.equipmentId}</p>
           </div>
           <div className="mt-4 sm:mt-0">
-            <span className="font-semibold text-blue-600 block">
+            <span className="font-semibold text-blue-600 block text-right">
               {formatPrice(rental.totalAmount)} + {formatPrice(rental.deposit)} (caution)
             </span>
-            <span className="text-gray-500 text-sm block">
+            <span className="text-gray-500 text-sm block text-right">
               {formatDate(rental.startDate)} - {formatDate(rental.endDate)}
             </span>
           </div>
         </div>
-        
-        <div className="flex flex-wrap gap-2 mt-6">
-          <Link
-            href={`/rentals/${rental.id}`}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition text-sm"
-          >
+      </CardContent>
+      
+      <CardFooter className="flex flex-wrap gap-2">
+        <Button asChild variant="default">
+          <Link href={`/rentals/${rental.id}`}>
             Voir les détails
           </Link>
-          
-          {rental.isActive && !rental.isConfirmed && (
-            <button
-              onClick={() => onCancel(rental.id)}
-              className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded transition text-sm"
-            >
-              Annuler
-            </button>
-          )}
-          
-          {rental.isActive && rental.isConfirmed && !rental.isReturned && (
-            <button
-              onClick={() => onMarkReturned(rental.id)}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded transition text-sm"
-            >
-              Marquer comme retourné
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+        </Button>
+        
+        {rental.isActive && !rental.isConfirmed && (
+          <Button
+            variant="destructive"
+            onClick={() => onCancel(rental.id)}
+          >
+            Annuler
+          </Button>
+        )}
+        
+        {rental.isActive && rental.isConfirmed && !rental.isReturned && (
+          <Button
+            variant="outline"
+            onClick={() => onMarkReturned(rental.id)}
+          >
+            Marquer comme retourné
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 } 

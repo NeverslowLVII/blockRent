@@ -4,14 +4,15 @@ import { useState, useEffect } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import EquipmentCard from "@/components/equipments/EquipmentCard";
 import Loader from "@/components/ui/Loader";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Equipment } from "@/types";
 
 export default function EquipmentsPage() {
   const { isConnected, connect } = useContracts();
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   // Pour cette démonstration, nous utilisons des équipements fictifs
   // Dans une implémentation réelle, vous récupéreriez les données depuis la blockchain
@@ -69,18 +70,20 @@ export default function EquipmentsPage() {
   if (!isConnected) {
     return (
       <div className="animate-fade-in">
-        <div className="section">
-          <h1>Équipements disponibles</h1>
-          <div className="card card-body text-center py-16">
-            <p className="text-lg text-gray-600 mb-8">
-              Connectez votre portefeuille pour voir les équipements disponibles.
-            </p>
-            <div className="flex justify-center">
-              <Button variant="primary" size="lg" onClick={connect}>
-                Connecter mon portefeuille
-              </Button>
-            </div>
-          </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-6">Équipements disponibles</h1>
+          <Card>
+            <CardContent className="text-center py-16">
+              <p className="text-lg text-gray-600 mb-8">
+                Connectez votre portefeuille pour voir les équipements disponibles.
+              </p>
+              <div className="flex justify-center">
+                <Button size="lg" onClick={connect}>
+                  Connecter mon portefeuille
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -88,30 +91,34 @@ export default function EquipmentsPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="section">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="mb-0">Équipements disponibles</h1>
-          <Button variant="primary">
+          <h1 className="text-3xl font-bold mb-0">Équipements disponibles</h1>
+          <Button>
             Ajouter un équipement
           </Button>
         </div>
         
         {isLoading ? (
-          <div className="card card-body flex justify-center items-center py-20">
-            <Loader size="lg" />
-          </div>
+          <Card>
+            <CardContent className="flex justify-center items-center py-20">
+              <Loader size="lg" />
+            </CardContent>
+          </Card>
         ) : error ? (
           <div className="bg-red-50 text-red-600 p-4 rounded-lg">
             Erreur: {error}
           </div>
         ) : equipments.length === 0 ? (
-          <div className="card card-body text-center py-16">
-            <p className="text-lg text-gray-600 mb-4">
-              Aucun équipement n&apos;est disponible pour le moment.
-            </p>
-          </div>
+          <Card>
+            <CardContent className="text-center py-16">
+              <p className="text-lg text-gray-600 mb-4">
+                Aucun équipement n&apos;est disponible pour le moment.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="equipment-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {equipments.map((equipment) => (
               <EquipmentCard key={equipment.id} equipment={equipment} />
             ))}

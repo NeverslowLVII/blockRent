@@ -7,8 +7,8 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Equipment } from "@/types";
 import Loader from "@/components/ui/Loader";
-import Button from "@/components/ui/Button";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate, formatAddress } from "@/utils/formatters";
 
 export default function EquipmentDetailsPage() {
@@ -139,7 +139,7 @@ export default function EquipmentDetailsPage() {
             Cet équipement n&apos;existe pas ou a été supprimé.
           </p>
           <Button
-            variant="primary"
+            variant="default"
             size="lg"
             onClick={() => router.push("/equipments")}
           >
@@ -167,7 +167,9 @@ export default function EquipmentDetailsPage() {
                 <span className="text-xl font-semibold text-blue-600">
                   {formatPrice(equipment.dailyRate)} / jour
                 </span>
-                <StatusBadge status={equipment.isAvailable ? 'available' : 'unavailable'} />
+                <Badge variant={equipment.isAvailable ? 'default' : 'destructive'}>
+                  {equipment.isAvailable ? 'Disponible' : 'Indisponible'}
+                </Badge>
               </div>
               
               <p className="text-gray-600 leading-relaxed mb-4">
@@ -233,7 +235,6 @@ export default function EquipmentDetailsPage() {
                     size="sm"
                     onClick={checkAvailability}
                     disabled={isCheckingAvailability}
-                    isLoading={isCheckingAvailability}
                   >
                     Vérifier la disponibilité
                   </Button>
@@ -291,9 +292,8 @@ export default function EquipmentDetailsPage() {
               )}
               
               <Button
-                variant="primary"
+                variant="default"
                 size="lg"
-                fullWidth
                 onClick={createRental}
                 disabled={!startDate || !endDate || isAvailable === false}
               >

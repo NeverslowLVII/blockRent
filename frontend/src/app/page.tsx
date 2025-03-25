@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useContracts } from '@/lib/hooks/useContracts';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const { isConnected, connect } = useContracts();
@@ -23,7 +23,7 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/equipments">
-                <Button variant="primary" size="lg">
+                <Button variant="default" size="lg">
                   Explorer les équipements
                 </Button>
               </Link>
@@ -75,7 +75,7 @@ export default function Home() {
       </section>
       
       {/* Section fonctionnalités */}
-      <section className="py-16 bg-white rounded-xl shadow-sm">
+      <section className="py-16 bg-gray-50 rounded-xl shadow-sm">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Comment ça fonctionne</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -130,7 +130,7 @@ export default function Home() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link href="/equipments">
-            <Button variant="primary" size="lg">
+            <Button variant="default" size="lg">
               Explorer les équipements
             </Button>
           </Link>

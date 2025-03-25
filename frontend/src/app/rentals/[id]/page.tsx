@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Rental, Equipment } from "@/types";
 import Loader from "@/components/ui/Loader";
-import Button from "@/components/ui/Button";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { Button } from "@/components/ui/button";
 import { formatPrice, formatDate, formatAddress } from "@/utils/formatters";
+import { Badge } from "@/components/ui/badge";
 
 export default function RentalDetailsPage() {
-  const { isConnected, connect } = useContracts();
   const [rental, setRental] = useState<Rental | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,7 +163,7 @@ export default function RentalDetailsPage() {
             Cette location n&apos;existe pas ou a été supprimée.
           </p>
           <Button
-            variant="primary"
+            variant="default"
             size="lg"
             onClick={() => router.push("/rentals")}
           >
@@ -179,7 +177,9 @@ export default function RentalDetailsPage() {
               <div>
                 <h1 className="text-2xl font-bold mb-2 flex items-center gap-3">
                   Location #{rental.id}
-                  <StatusBadge status={getRentalStatus()} />
+                  <Badge variant={getRentalStatus() === 'cancelled' ? 'destructive' : 'default'}>
+                    {getRentalStatus()}
+                  </Badge>
                 </h1>
                 <p className="text-gray-600">
                   Équipement: {equipment.name} (#{equipment.id})
@@ -199,9 +199,8 @@ export default function RentalDetailsPage() {
             <div className="mt-6 flex flex-wrap gap-2">
               {rental.isActive && !rental.isConfirmed && (
                 <Button
-                  variant="danger"
+                  variant="destructive"
                   onClick={cancelRental}
-                  isLoading={isCancelling}
                   disabled={isCancelling}
                 >
                   Annuler la location
@@ -210,9 +209,8 @@ export default function RentalDetailsPage() {
               
               {rental.isActive && rental.isConfirmed && !rental.isReturned && (
                 <Button
-                  variant="warning"
+                  variant="default"
                   onClick={markAsReturned}
-                  isLoading={isMarkingReturned}
                   disabled={isMarkingReturned}
                 >
                   Marquer comme retourné

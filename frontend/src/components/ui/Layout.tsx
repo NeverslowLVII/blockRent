@@ -13,7 +13,7 @@ export default function Layout({ children }: LayoutProps) {
   const { isConnected, connect, account, disconnect } = useContracts();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header avec navigation */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">

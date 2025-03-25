@@ -5,7 +5,8 @@ import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
 import Loader from "@/components/ui/Loader";
 import RentalCard from "@/components/rentals/RentalCard";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Rental } from "@/types";
 
 export default function RentalsPage() {
@@ -87,22 +88,23 @@ export default function RentalsPage() {
   if (!isConnected) {
     return (
       <div className="animate-fade-in">
-        <div className="section">
-          <h1>Mes locations</h1>
-          <div className="card card-body text-center py-16">
-            <p className="text-lg text-gray-600 mb-8">
-              Connectez votre portefeuille pour voir vos locations.
-            </p>
-            <div className="flex justify-center">
-              <Button 
-                variant="primary" 
-                size="lg" 
-                onClick={connect}
-              >
-                Connecter mon portefeuille
-              </Button>
-            </div>
-          </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-6">Mes locations</h1>
+          <Card>
+            <CardContent className="text-center py-16">
+              <p className="text-lg text-gray-600 mb-8">
+                Connectez votre portefeuille pour voir vos locations.
+              </p>
+              <div className="flex justify-center">
+                <Button 
+                  size="lg" 
+                  onClick={connect}
+                >
+                  Connecter mon portefeuille
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -110,32 +112,36 @@ export default function RentalsPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="section">
-        <h1>Mes locations</h1>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Mes locations</h1>
         
         {isLoading ? (
-          <div className="card card-body flex justify-center items-center py-20">
-            <Loader size="lg" />
-          </div>
+          <Card>
+            <CardContent className="flex justify-center items-center py-20">
+              <Loader size="lg" />
+            </CardContent>
+          </Card>
         ) : error ? (
           <div className="bg-red-50 text-red-600 p-4 rounded-lg">
             Erreur: {error}
           </div>
         ) : rentals.length === 0 ? (
-          <div className="card card-body text-center py-16">
-            <p className="text-lg text-gray-600 mb-8">
-              Vous n&apos;avez pas encore de locations.
-            </p>
-            <div className="flex justify-center">
-              <Link href="/equipments">
-                <Button variant="primary" size="lg">
-                  Explorer les équipements disponibles
+          <Card>
+            <CardContent className="text-center py-16">
+              <p className="text-lg text-gray-600 mb-8">
+                Vous n&apos;avez pas encore de locations.
+              </p>
+              <div className="flex justify-center">
+                <Button asChild size="lg">
+                  <Link href="/equipments">
+                    Explorer les équipements disponibles
+                  </Link>
                 </Button>
-              </Link>
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="rental-list">
+          <div className="flex flex-col gap-6">
             {rentals.map((rental) => (
               <RentalCard 
                 key={rental.id} 
