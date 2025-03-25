@@ -27,6 +27,8 @@ blockchain-renting/
 ├── frontend/             # Application frontend Next.js
 │   ├── src/              # Code source frontend
 │   │   ├── app/          # Pages et composants de l'application
+│   │   │   ├── layout.tsx  # Layout racine qui utilise le Layout principal
+│   │   │   └── providers.tsx # Fournit des contextes à l'application
 │   │   ├── components/   # Composants réutilisables
 │   │   │   ├── equipments/ # Composants liés aux équipements
 │   │   │   ├── rentals/  # Composants liés aux locations
@@ -45,6 +47,8 @@ L'application utilise une structure de layout globale qui comprend :
 - Un layout principal (`components/ui/Layout.tsx`) qui contient la navbar et le footer
 - Ce layout est appliqué à toutes les pages via le `app/layout.tsx`
 - Toutes les pages s'affichent à l'intérieur de ce layout
+
+> **Important**: Ne pas inclure le composant Layout.tsx dans d'autres providers ou wrappers pour éviter les duplications de navbar et footer.
 
 ## Fonctionnalités
 

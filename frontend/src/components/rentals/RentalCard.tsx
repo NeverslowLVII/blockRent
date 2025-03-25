@@ -3,6 +3,7 @@
 import { Rental } from '@/types';
 import { formatPrice, formatDate } from '@/utils/formatters';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,65 +41,122 @@ export default function RentalCard({ rental, onCancel, onMarkReturned }: RentalC
     }
   };
 
-  // Traduire le statut en français
+  // Traduire le statut en français et ajouter des emojis
   const getStatusText = () => {
     switch (getStatus()) {
-      case 'cancelled': return 'Annulée';
-      case 'returned': return 'Retournée';
-      case 'completed': return 'Terminée';
-      case 'pending': return 'En attente';
-      case 'confirmed': return 'Confirmée';
-      default: return 'Inconnue';
+      case 'cancelled': return '❌ Annulée';
+      case 'returned': return '✅ Retournée';
+      case 'completed': return '🏁 Terminée';
+      case 'pending': return '⏳ En attente';
+      case 'confirmed': return '🔆 Confirmée';
+      default: return '❓ Inconnue';
     }
   };
 
+  // Animation pour les cartes
+  const cardVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+    hover: { y: -5, transition: { duration: 0.2 } }
+  };
+
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex flex-col sm:flex-row justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-2 flex items-center gap-3">
-              Location #{rental.id}
-              <Badge variant={getBadgeVariant()}>{getStatusText()}</Badge>
-            </h2>
-            <p className="text-gray-600">Équipement #{rental.equipmentId}</p>
+    <motion.div
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+    >
+      <Card className="overflow-hidden border-2 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-3">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                  Location #{rental.id}
+                </span>
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                >
+                  <Badge variant={getBadgeVariant()} className="text-xs font-semibold">
+                    {getStatusText()}
+                  </Badge>
+                </motion.div>
+              </h2>
+              <p className="text-gray-600">Équipement #{rental.equipmentId}</p>
+            </div>
+            <motion.div 
+              className="mt-4 sm:mt-0"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <span className="font-bold text-blue-600 block text-right text-xl">
+                {formatPrice(rental.totalAmount)}
+              </span>
+              <span className="text-gray-500 text-sm block text-right">
+                + {formatPrice(rental.deposit)} (caution)
+              </span>
+              <div className="text-right mt-1 flex items-center justify-end text-sm text-gray-500">
+                <svg className="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>
+                  {formatDate(rental.startDate).slice(0, 5)} - {formatDate(rental.endDate).slice(0, 5)}
+                </span>
+              </div>
+            </motion.div>
           </div>
-          <div className="mt-4 sm:mt-0">
-            <span className="font-semibold text-blue-600 block text-right">
-              {formatPrice(rental.totalAmount)} + {formatPrice(rental.deposit)} (caution)
-            </span>
-            <span className="text-gray-500 text-sm block text-right">
-              {formatDate(rental.startDate)} - {formatDate(rental.endDate)}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex flex-wrap gap-2">
-        <Button asChild variant="default">
-          <Link href={`/rentals/${rental.id}`}>
-            Voir les détails
-          </Link>
-        </Button>
+        </CardContent>
         
-        {rental.isActive && !rental.isConfirmed && (
-          <Button
-            variant="destructive"
-            onClick={() => onCancel(rental.id)}
-          >
-            Annuler
+        <CardFooter className="flex flex-wrap gap-2 pt-2 border-t">
+          <Button asChild variant="default" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 transition-all duration-300 group">
+            <Link href={`/rentals/${rental.id}`}>
+              <span className="flex items-center">
+                Voir les détails
+                <svg className="ml-1 w-4 h-4 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </span>
+            </Link>
           </Button>
-        )}
-        
-        {rental.isActive && rental.isConfirmed && !rental.isReturned && (
-          <Button
-            variant="outline"
-            onClick={() => onMarkReturned(rental.id)}
-          >
-            Marquer comme retourné
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+          
+          {rental.isActive && !rental.isConfirmed && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="destructive"
+                onClick={() => onCancel(rental.id)}
+                className="group"
+              >
+                <span className="flex items-center">
+                  <svg className="w-4 h-4 mr-1 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Annuler
+                </span>
+              </Button>
+            </motion.div>
+          )}
+          
+          {rental.isActive && rental.isConfirmed && !rental.isReturned && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="outline"
+                onClick={() => onMarkReturned(rental.id)}
+                className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800 group"
+              >
+                <span className="flex items-center">
+                  <svg className="w-4 h-4 mr-1 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Retourné
+                </span>
+              </Button>
+            </motion.div>
+          )}
+        </CardFooter>
+      </Card>
+    </motion.div>
   );
 } 
