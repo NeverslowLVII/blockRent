@@ -86,60 +86,67 @@ export default function RentalsPage() {
   // Si l'utilisateur n'est pas connecté, demander la connexion
   if (!isConnected) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-16">
-          <h1 className="text-3xl font-bold mb-6">Mes locations</h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Connectez votre portefeuille pour voir vos locations.
-          </p>
-          <Button 
-            variant="primary" 
-            size="lg" 
-            onClick={connect}
-          >
-            Connecter mon portefeuille
-          </Button>
+      <div className="animate-fade-in">
+        <div className="section">
+          <h1>Mes locations</h1>
+          <div className="card card-body text-center py-16">
+            <p className="text-lg text-gray-600 mb-8">
+              Connectez votre portefeuille pour voir vos locations.
+            </p>
+            <div className="flex justify-center">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                onClick={connect}
+              >
+                Connecter mon portefeuille
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Mes locations</h1>
-      
-      {isLoading ? (
-        <div className="py-20">
-          <Loader size="lg" />
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-          Erreur: {error}
-        </div>
-      ) : rentals.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-lg text-gray-600 mb-8">
-            Vous n&apos;avez pas encore de locations.
-          </p>
-          <Link
-            href="/equipments"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg text-lg transition inline-block"
-          >
-            Explorer les équipements disponibles
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {rentals.map((rental) => (
-            <RentalCard 
-              key={rental.id} 
-              rental={rental}
-              onCancel={handleCancel}
-              onMarkReturned={handleMarkReturned}
-            />
-          ))}
-        </div>
-      )}
+    <div className="animate-fade-in">
+      <div className="section">
+        <h1>Mes locations</h1>
+        
+        {isLoading ? (
+          <div className="card card-body flex justify-center items-center py-20">
+            <Loader size="lg" />
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+            Erreur: {error}
+          </div>
+        ) : rentals.length === 0 ? (
+          <div className="card card-body text-center py-16">
+            <p className="text-lg text-gray-600 mb-8">
+              Vous n&apos;avez pas encore de locations.
+            </p>
+            <div className="flex justify-center">
+              <Link href="/equipments">
+                <Button variant="primary" size="lg">
+                  Explorer les équipements disponibles
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="rental-list">
+            {rentals.map((rental) => (
+              <RentalCard 
+                key={rental.id} 
+                rental={rental}
+                onCancel={handleCancel}
+                onMarkReturned={handleMarkReturned}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 } 
