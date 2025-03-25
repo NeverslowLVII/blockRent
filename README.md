@@ -11,8 +11,10 @@ Un projet décentralisé de location d'équipements basé sur la blockchain Ethe
 
 ### Frontend (Next.js)
 
-- Interface utilisateur moderne avec Tailwind CSS
+- Interface utilisateur moderne et ludique avec Tailwind CSS
+- Animations fluides avec Framer Motion
 - Intégration avec ethers.js pour interagir avec les smart contracts
+- Design réactif et interactif avec des dégradés et effets visuels
 - Pages pour consulter les équipements disponibles et gérer les locations
 - Composants réutilisables (EquipmentCard, RentalCard, StatusBadge, Button, Loader)
 
@@ -50,6 +52,16 @@ L'application utilise une structure de layout globale qui comprend :
 
 > **Important**: Ne pas inclure le composant Layout.tsx dans d'autres providers ou wrappers pour éviter les duplications de navbar et footer.
 
+## Expérience utilisateur
+
+L'interface a été conçue pour être à la fois fonctionnelle et ludique :
+
+- **Animations réactives** : Les éléments réagissent aux interactions avec des animations fluides
+- **Design visuel moderne** : Utilisation de dégradés, d'effets de hover et de transitions
+- **Expérience interactive** : Les composants réagissent visuellement aux actions de l'utilisateur
+- **Navigation simplifiée** : Menus adaptés aux formats mobile et desktop
+- **Retours visuels** : Badges animés, loader personnalisé et transitions entre les états
+
 ## Fonctionnalités
 
 - Enregistrement d'équipements par les propriétaires
@@ -61,7 +73,7 @@ L'application utilise une structure de layout globale qui comprend :
 ## Technologies utilisées
 
 - **Smart Contracts**: Solidity, Foundry
-- **Frontend**: Next.js, ethers.js, Tailwind CSS
+- **Frontend**: Next.js, ethers.js, Tailwind CSS, Framer Motion
 - **Tests**: Forge (Foundry)
 - **Déploiement**: Scripts Foundry
 
@@ -84,6 +96,62 @@ forge install
 cd frontend
 npm install
 ```
+
+## Déploiement
+
+### Déploiement des Smart Contracts sur Polygon Amoy Testnet
+
+1. **Configurer le fichier .env**
+
+   Copiez le fichier `.env.example` en `.env` et complétez les informations suivantes:
+
+   ```
+   PRIVATE_KEY=votre_clé_privée_sans_0x
+   POLYGONSCAN_API_KEY=votre_clé_api_polygonscan (optionnel pour la vérification des contrats)
+   ```
+2. **Déployer les contrats**
+
+   ```bash
+   cd contracts
+   forge script script/Deploy.s.sol --rpc-url polygon_amoy --broadcast --verify
+   ```
+3. **Mettre à jour les adresses des contrats**
+
+   Une fois le déploiement réussi, notez les adresses des contrats déployés et mettez-les à jour dans le fichier `frontend/src/constants/contracts.ts` :
+
+   ```typescript
+   export const CONTRACT_ADDRESSES: Record<number, ContractAddresses> = {
+     // Polygon Amoy (Testnet)
+     80002: {
+       equipmentRegistry: '0x...', // Adresse obtenue lors du déploiement
+       rentalManager: '0x...',      // Adresse obtenue lors du déploiement
+     },
+     // ...
+   };
+   ```
+
+### Déploiement du Frontend sur Vercel
+
+1. **Connecter votre compte GitHub à Vercel**
+2. **Importer le projet**
+
+   Dans le dashboard Vercel, cliquez sur "Add New..." puis "Project" et sélectionnez votre dépôt GitHub.
+3. **Configurer le projet**
+
+   - Dossier racine: `frontend`
+   - Commande de build: `npm run build`
+   - Dossier de sortie: `.next`
+4. **Variables d'environnement**
+
+   Ajoutez les variables d'environnement nécessaires dans les paramètres du projet Vercel:
+
+   ```
+   NEXT_PUBLIC_CHAIN_ID=80002
+   NEXT_PUBLIC_NETWORK_NAME="Polygon Amoy"
+   ```
+5. **Déployer**
+
+   Cliquez sur "Deploy" et attendez que le déploiement soit terminé.
 
 ## Développement
 
@@ -109,6 +177,8 @@ npm run build      # Construire pour la production
 - ✅ Frontend de base avec Next.js
 - ✅ Intégration avec ethers.js
 - ✅ Composants réutilisables pour l'UI (EquipmentCard, RentalCard, StatusBadge, Button, etc.)
+- ✅ Animations et transitions fluides avec Framer Motion
+- ✅ Design réactif et ludique
 - ✅ Pages pour la liste des équipements et la gestion des locations
 - ✅ Formatage standardisé des dates, prix et adresses
 - ✅ Gestion des états de chargement et des erreurs
