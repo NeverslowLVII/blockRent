@@ -3,31 +3,16 @@
 import { useState, useEffect } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
-
-interface Rental {
-  id: number;
-  equipmentId: number;
-  renter: string;
-  owner: string;
-  startDate: number;
-  endDate: number;
-  dailyRate: string;
-  deposit: string;
-  totalAmount: string;
-  isActive: boolean;
-  isReturned: boolean;
-  isCancelled: boolean;
-  isDepositReturned: boolean;
-  isConfirmed: boolean;
-  createdAt: number;
-  updatedAt: number;
-}
+import Loader from "@/components/ui/Loader";
+import RentalCard from "@/components/rentals/RentalCard";
+import Button from "@/components/ui/Button";
+import { Rental } from "@/types";
 
 export default function RentalsPage() {
   const { isConnected, connect, account } = useContracts();
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Pour cette démonstration, nous utilisons des locations fictives
   // Dans une implémentation réelle, vous récupéreriez les données depuis la blockchain
@@ -86,14 +71,16 @@ export default function RentalsPage() {
     }
   }, [isConnected, account]);
 
-  // Fonction pour formater les dates
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
+  const handleCancel = (rentalId: number) => {
+    setError(null);
+    // Dans une application réelle, vous appelleriez le contrat ici
+    alert(`Annulation de la location #${rentalId}`);
   };
 
-  // Fonction pour formater le prix en ETH
-  const formatPrice = (price: string) => {
-    return `${price} ETH`;
+  const handleMarkReturned = (rentalId: number) => {
+    setError(null);
+    // Dans une application réelle, vous appelleriez le contrat ici
+    alert(`Marquage comme retourné de la location #${rentalId}`);
   };
 
   // Si l'utilisateur n'est pas connecté, demander la connexion
@@ -105,12 +92,13 @@ export default function RentalsPage() {
           <p className="text-lg text-gray-600 mb-8">
             Connectez votre portefeuille pour voir vos locations.
           </p>
-          <button
+          <Button 
+            variant="primary" 
+            size="lg" 
             onClick={connect}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg text-lg transition"
           >
             Connecter mon portefeuille
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -121,8 +109,8 @@ export default function RentalsPage() {
       <h1 className="text-3xl font-bold mb-6">Mes locations</h1>
       
       {isLoading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="py-20">
+          <Loader size="lg" />
         </div>
       ) : error ? (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg">
@@ -143,73 +131,12 @@ export default function RentalsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {rentals.map((rental) => (
-            <div 
-              key={rental.id}
-              className="border rounded-lg overflow-hidden bg-white shadow-sm"
-            >
-              <div className="p-6">
-                <div className="flex flex-col sm:flex-row justify-between mb-4">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2">
-                      Location #{rental.id}
-                      <span className={`ml-3 px-2 py-1 rounded-full text-xs font-medium ${
-                        rental.isActive 
-                          ? rental.isConfirmed
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                          : rental.isCancelled
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                      }`}>
-                        {rental.isActive 
-                          ? rental.isConfirmed
-                            ? "Confirmée"
-                            : "En attente de confirmation"
-                          : rental.isCancelled
-                            ? "Annulée"
-                            : rental.isReturned
-                              ? "Retournée"
-                              : "Terminée"}
-                      </span>
-                    </h2>
-                    <p className="text-gray-600">Équipement #{rental.equipmentId}</p>
-                  </div>
-                  <div className="mt-4 sm:mt-0">
-                    <span className="font-semibold text-blue-600 block">
-                      {formatPrice(rental.totalAmount)} + {formatPrice(rental.deposit)} (caution)
-                    </span>
-                    <span className="text-gray-500 text-sm block">
-                      {formatDate(rental.startDate)} - {formatDate(rental.endDate)}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2 mt-6">
-                  <Link
-                    href={`/rentals/${rental.id}`}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition text-sm"
-                  >
-                    Voir les détails
-                  </Link>
-                  
-                  {rental.isActive && !rental.isConfirmed && (
-                    <button
-                      className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded transition text-sm"
-                    >
-                      Annuler
-                    </button>
-                  )}
-                  
-                  {rental.isActive && rental.isConfirmed && !rental.isReturned && (
-                    <button
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded transition text-sm"
-                    >
-                      Marquer comme retourné
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <RentalCard 
+              key={rental.id} 
+              rental={rental}
+              onCancel={handleCancel}
+              onMarkReturned={handleMarkReturned}
+            />
           ))}
         </div>
       )}

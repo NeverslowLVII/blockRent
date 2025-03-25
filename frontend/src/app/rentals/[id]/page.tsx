@@ -78,7 +78,7 @@ export default function RentalDetailsPage() {
             id: 1,
             name: "Tronçonneuse professionnelle",
             description: "Tronçonneuse à essence de qualité professionnelle, idéale pour les gros travaux forestiers.",
-            imageURI: "https://images.unsplash.com/photo-1545102241-9465df33415f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+            imageURI: "/file.svg",
           };
 
           setRental(mockRental);

@@ -43,7 +43,7 @@ export default function EquipmentDetailsPage() {
           owner: "0x1234567890123456789012345678901234567890",
           name: "Tronçonneuse professionnelle",
           description: "Tronçonneuse à essence de qualité professionnelle, idéale pour les gros travaux forestiers. Puissance de 4,8 kW, longueur de guide de 50 cm. Livrée avec une chaîne de rechange et un bidon d'huile.",
-          imageURI: "https://images.unsplash.com/photo-1545102241-9465df33415f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+          imageURI: "/file.svg",
           dailyRate: "0.5",
           isAvailable: true,
           createdAt: Date.now() - 2592000000, // 30 jours avant
