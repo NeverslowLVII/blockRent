@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useContracts } from '@/lib/hooks/useContracts';
-import Link from 'next/link';
 import Loader from '@/components/ui/Loader';
 import EquipmentCard from '@/components/equipments/EquipmentCard';
 import { Equipment } from '@/types';

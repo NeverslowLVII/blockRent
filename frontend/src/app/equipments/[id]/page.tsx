@@ -5,17 +5,11 @@ import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-
-interface Equipment {
-  id: number;
-  owner: string;
-  name: string;
-  description: string;
-  imageURI: string;
-  dailyRate: string;
-  isAvailable: boolean;
-  createdAt: number;
-}
+import { Equipment } from "@/types";
+import Loader from "@/components/ui/Loader";
+import Button from "@/components/ui/Button";
+import StatusBadge from "@/components/ui/StatusBadge";
+import { formatPrice, formatDate, formatAddress } from "@/utils/formatters";
 
 export default function EquipmentDetailsPage() {
   const { isConnected, connect } = useContracts();
@@ -43,8 +37,9 @@ export default function EquipmentDetailsPage() {
           owner: "0x1234567890123456789012345678901234567890",
           name: "Tronçonneuse professionnelle",
           description: "Tronçonneuse à essence de qualité professionnelle, idéale pour les gros travaux forestiers. Puissance de 4,8 kW, longueur de guide de 50 cm. Livrée avec une chaîne de rechange et un bidon d'huile.",
-          imageURI: "/file.svg",
+          imageUrl: "/file.svg",
           dailyRate: "0.5",
+          deposit: "1.0",
           isAvailable: true,
           createdAt: Date.now() - 2592000000, // 30 jours avant
         };
@@ -107,21 +102,6 @@ export default function EquipmentDetailsPage() {
     router.push("/rentals");
   };
 
-  // Fonction pour formater les dates
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
-  };
-
-  // Fonction pour formater le prix en ETH
-  const formatPrice = (price: string) => {
-    return `${price} ETH`;
-  };
-
-  // Fonction pour tronquer les adresses ETH
-  const truncateAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
   // Fonction pour obtenir la date minimale (aujourd'hui au format YYYY-MM-DD)
   const getMinDate = () => {
     const today = new Date();
@@ -146,8 +126,8 @@ export default function EquipmentDetailsPage() {
       </div>
       
       {isLoading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="py-20">
+          <Loader size="lg" />
         </div>
       ) : error && !isAvailable ? (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
@@ -158,12 +138,13 @@ export default function EquipmentDetailsPage() {
           <p className="text-lg text-gray-600 mb-8">
             Cet équipement n&apos;existe pas ou a été supprimé.
           </p>
-          <Link
-            href="/equipments"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg text-lg transition inline-block"
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => router.push("/equipments")}
           >
             Voir tous les équipements
-          </Link>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -171,7 +152,7 @@ export default function EquipmentDetailsPage() {
           <div>
             <div className="rounded-lg overflow-hidden bg-gray-100 aspect-video mb-6 relative h-[300px]">
               <Image 
-                src={equipment.imageURI} 
+                src={equipment.imageUrl || '/images/placeholder-equipment.jpg'} 
                 alt={equipment.name} 
                 fill
                 className="object-cover"
@@ -186,13 +167,7 @@ export default function EquipmentDetailsPage() {
                 <span className="text-xl font-semibold text-blue-600">
                   {formatPrice(equipment.dailyRate)} / jour
                 </span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  equipment.isAvailable 
-                    ? "bg-green-100 text-green-800" 
-                    : "bg-red-100 text-red-800"
-                }`}>
-                  {equipment.isAvailable ? "Disponible" : "Non disponible"}
-                </span>
+                <StatusBadge status={equipment.isAvailable ? 'available' : 'unavailable'} />
               </div>
               
               <p className="text-gray-600 leading-relaxed mb-4">
@@ -201,7 +176,7 @@ export default function EquipmentDetailsPage() {
               
               <div className="border-t pt-4 mt-4">
                 <p className="text-gray-600 text-sm">
-                  Propriétaire: {truncateAddress(equipment.owner)}
+                  Propriétaire: {formatAddress(equipment.owner)}
                 </p>
                 <p className="text-gray-600 text-sm">
                   Disponible depuis: {formatDate(equipment.createdAt)}
@@ -253,25 +228,15 @@ export default function EquipmentDetailsPage() {
               
               {startDate && endDate && (
                 <div>
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={checkAvailability}
                     disabled={isCheckingAvailability}
-                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center mt-2"
+                    isLoading={isCheckingAvailability}
                   >
-                    {isCheckingAvailability ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 mr-2 border-t-2 border-b-2 border-blue-500 rounded-full"></div>
-                        Vérification...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                        </svg>
-                        Vérifier la disponibilité
-                      </>
-                    )}
-                  </button>
+                    Vérifier la disponibilité
+                  </Button>
                 </div>
               )}
               
@@ -305,7 +270,7 @@ export default function EquipmentDetailsPage() {
                   
                   <div className="flex justify-between mb-2">
                     <span>Caution (remboursable)</span>
-                    <span>{formatPrice(equipment.dailyRate)}</span>
+                    <span>{formatPrice(equipment.deposit)}</span>
                   </div>
                   
                   <div className="flex justify-between font-semibold text-lg border-t pt-2 mt-2">
@@ -316,7 +281,7 @@ export default function EquipmentDetailsPage() {
                             (
                               parseFloat(equipment.dailyRate) * 
                               Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) +
-                              parseFloat(equipment.dailyRate)
+                              parseFloat(equipment.deposit)
                             ).toString()
                           )
                         : formatPrice("0")}
@@ -325,17 +290,15 @@ export default function EquipmentDetailsPage() {
                 </div>
               )}
               
-              <button
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
                 onClick={createRental}
                 disabled={!startDate || !endDate || isAvailable === false}
-                className={`w-full py-3 px-4 rounded-lg font-medium text-white transition mt-4 ${
-                  (!startDate || !endDate || isAvailable === false)
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
               >
                 {isConnected ? "Réserver maintenant" : "Connecter le portefeuille"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

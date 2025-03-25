@@ -5,13 +5,16 @@ Un projet décentralisé de location d'équipements basé sur la blockchain Ethe
 ## Composants du projet
 
 ### Smart Contracts
+
 - **EquipmentRegistry.sol**: Gestion de l'enregistrement et du suivi des équipements
 - **RentalManager.sol**: Gestion du processus de location (création, confirmation, retour)
 
 ### Frontend (Next.js)
+
 - Interface utilisateur moderne avec Tailwind CSS
 - Intégration avec ethers.js pour interagir avec les smart contracts
 - Pages pour consulter les équipements disponibles et gérer les locations
+- Composants réutilisables (EquipmentCard, RentalCard, StatusBadge, Button, Loader)
 
 ## Structure du projet
 
@@ -24,7 +27,13 @@ blockchain-renting/
 ├── frontend/             # Application frontend Next.js
 │   ├── src/              # Code source frontend
 │   │   ├── app/          # Pages et composants de l'application
-│   │   └── lib/          # Bibliothèques et hooks
+│   │   ├── components/   # Composants réutilisables
+│   │   │   ├── equipments/ # Composants liés aux équipements
+│   │   │   ├── rentals/  # Composants liés aux locations
+│   │   │   └── ui/       # Composants UI génériques
+│   │   ├── lib/          # Bibliothèques et hooks
+│   │   ├── types/        # Définitions de types TypeScript
+│   │   └── utils/        # Fonctions utilitaires
 └── scripts/              # Scripts utilitaires
 ```
 
@@ -46,6 +55,7 @@ blockchain-renting/
 ## Installation
 
 ### Prérequis
+
 - Node.js et npm
 - Foundry (pour les smart contracts)
 - Un portefeuille Ethereum (Rabby, MetaMask, etc.)
@@ -85,12 +95,17 @@ npm run build      # Construire pour la production
 - ✅ Smart contracts développés et testés
 - ✅ Frontend de base avec Next.js
 - ✅ Intégration avec ethers.js
+- ✅ Composants réutilisables pour l'UI (EquipmentCard, RentalCard, StatusBadge, Button, etc.)
 - ✅ Pages pour la liste des équipements et la gestion des locations
+- ✅ Formatage standardisé des dates, prix et adresses
+- ✅ Gestion des états de chargement et des erreurs
 - ✅ Build fonctionnel
 
 ## Prochaines étapes
 
 - Déploiement sur un testnet Ethereum
+- Finalisation de la page détaillée d'un équipement
+- Finalisation de la page détaillée d'une location
 - Ajout de fonctionnalités avancées (recherche, filtres, avis)
 - Implémentation d'un système de notifications
 - Optimisation pour mobile
