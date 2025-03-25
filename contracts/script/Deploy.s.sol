@@ -20,6 +20,10 @@ contract DeployScript is Script {
         RentalManager rentalManager = new RentalManager(address(equipmentRegistry));
         console.log(unicode"RentalManager déployé à: ", address(rentalManager));
 
+        // Configuration du RentalManager dans l'EquipmentRegistry
+        equipmentRegistry.setRentalManager(address(rentalManager));
+        console.log(unicode"RentalManager configuré dans EquipmentRegistry");
+
         vm.stopBroadcast();
     }
 } 
