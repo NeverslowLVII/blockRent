@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useParams } from "next/navigation";
 
 interface Rental {
   id: number;
@@ -32,13 +33,12 @@ interface Equipment {
 }
 
 export default function RentalDetailsPage() {
-  const { contracts, isConnected, connect, account } = useContracts();
+  const { isConnected, connect, account } = useContracts();
   const [rental, setRental] = useState<Rental | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
-  const router = useRouter();
   const rentalId = params.id as string;
 
   // Pour cette démonstration, nous utilisons des données fictives
@@ -53,36 +53,42 @@ export default function RentalDetailsPage() {
     const loadMockData = () => {
       setIsLoading(true);
       setTimeout(() => {
-        // Données fictives pour la démonstration
-        const mockRental = {
-          id: parseInt(rentalId),
-          equipmentId: 1,
-          renter: account || "0x0000000000000000000000000000000000000000",
-          owner: "0x1234567890123456789012345678901234567890",
-          startDate: Date.now() + 86400000, // demain
-          endDate: Date.now() + 259200000, // dans 3 jours
-          dailyRate: "0.5",
-          deposit: "1.0",
-          totalAmount: "1.5",
-          isActive: true,
-          isReturned: false,
-          isCancelled: false,
-          isDepositReturned: false,
-          isConfirmed: true,
-          createdAt: Date.now() - 86400000,
-          updatedAt: Date.now() - 86400000,
-        };
+        try {
+          // Données fictives pour la démonstration
+          const mockRental = {
+            id: parseInt(rentalId),
+            equipmentId: 1,
+            renter: account || "0x0000000000000000000000000000000000000000",
+            owner: "0x1234567890123456789012345678901234567890",
+            startDate: Date.now() + 86400000, // demain
+            endDate: Date.now() + 259200000, // dans 3 jours
+            dailyRate: "0.5",
+            deposit: "1.0",
+            totalAmount: "1.5",
+            isActive: true,
+            isReturned: false,
+            isCancelled: false,
+            isDepositReturned: false,
+            isConfirmed: true,
+            createdAt: Date.now() - 86400000,
+            updatedAt: Date.now() - 86400000,
+          };
 
-        const mockEquipment = {
-          id: 1,
-          name: "Tronçonneuse professionnelle",
-          description: "Tronçonneuse à essence de qualité professionnelle, idéale pour les gros travaux forestiers.",
-          imageURI: "https://images.unsplash.com/photo-1545102241-9465df33415f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-        };
+          const mockEquipment = {
+            id: 1,
+            name: "Tronçonneuse professionnelle",
+            description: "Tronçonneuse à essence de qualité professionnelle, idéale pour les gros travaux forestiers.",
+            imageURI: "https://images.unsplash.com/photo-1545102241-9465df33415f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+          };
 
-        setRental(mockRental);
-        setEquipment(mockEquipment);
-        setIsLoading(false);
+          setRental(mockRental);
+          setEquipment(mockEquipment);
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Erreur lors du chargement des données", error);
+          setError("Erreur lors du chargement des données");
+          setIsLoading(false);
+        }
       }, 1000);
     };
 
@@ -153,7 +159,7 @@ export default function RentalDetailsPage() {
       ) : !rental ? (
         <div className="text-center py-16">
           <p className="text-lg text-gray-600 mb-8">
-            Cette location n'existe pas ou vous n'y avez pas accès.
+            Cette location n&apos;existe pas ou vous n&apos;y avez pas accès.
           </p>
           <Link
             href="/rentals"
@@ -169,11 +175,13 @@ export default function RentalDetailsPage() {
             <h2 className="text-xl font-semibold mb-4">Équipement</h2>
             {equipment && (
               <>
-                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 mb-4">
-                  <img 
+                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 mb-4 relative h-[200px]">
+                  <Image 
                     src={equipment.imageURI} 
                     alt={equipment.name} 
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>
                 <h3 className="text-lg font-medium mb-2">{equipment.name}</h3>
@@ -182,7 +190,7 @@ export default function RentalDetailsPage() {
                   href={`/equipments/${equipment.id}`}
                   className="text-blue-600 hover:text-blue-800 mt-4 inline-block"
                 >
-                  Voir l'équipement
+                  Voir l&apos;équipement
                 </Link>
               </>
             )}

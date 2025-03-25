@@ -1,5 +1,12 @@
+// Ajout de la déclaration de type en haut du fichier
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
+
 import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import * as ethers from 'ethers';
 import { getContracts } from '../contracts/config';
 
 export const useContracts = () => {

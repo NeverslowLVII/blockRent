@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useContracts } from '@/lib/hooks/useContracts';
 
-export default function Navbar() {
+interface NavbarProps {
+  setShowWalletPrompt?: Dispatch<SetStateAction<boolean>>;
+}
+
+export default function Navbar({ setShowWalletPrompt }: NavbarProps) {
   const { account, isConnected, isLoading, connect, disconnect } = useContracts();
   const [mounted, setMounted] = useState(false);
 
@@ -17,6 +21,13 @@ export default function Navbar() {
   const formatAddress = (address: string | null) => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
+
+  const handleConnect = () => {
+    connect();
+    if (setShowWalletPrompt) {
+      setShowWalletPrompt(false);
+    }
   };
 
   return (
@@ -57,7 +68,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button
-                onClick={connect}
+                onClick={handleConnect}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
               >
                 Connecter Portefeuille

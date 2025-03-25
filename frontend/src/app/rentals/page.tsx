@@ -24,10 +24,10 @@ interface Rental {
 }
 
 export default function RentalsPage() {
-  const { contracts, isConnected, connect, account } = useContracts();
+  const { isConnected, connect, account } = useContracts();
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   // Pour cette démonstration, nous utilisons des locations fictives
   // Dans une implémentation réelle, vous récupéreriez les données depuis la blockchain
@@ -131,7 +131,7 @@ export default function RentalsPage() {
       ) : rentals.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-lg text-gray-600 mb-8">
-            Vous n'avez pas encore de locations.
+            Vous n&apos;avez pas encore de locations.
           </p>
           <Link
             href="/equipments"

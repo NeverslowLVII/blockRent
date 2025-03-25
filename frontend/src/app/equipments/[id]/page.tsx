@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 
 interface Equipment {
@@ -17,7 +18,7 @@ interface Equipment {
 }
 
 export default function EquipmentDetailsPage() {
-  const { contracts, isConnected, connect, account } = useContracts();
+  const { isConnected, connect } = useContracts();
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,7 +156,7 @@ export default function EquipmentDetailsPage() {
       ) : !equipment ? (
         <div className="text-center py-16">
           <p className="text-lg text-gray-600 mb-8">
-            Cet équipement n'existe pas ou a été supprimé.
+            Cet équipement n&apos;existe pas ou a été supprimé.
           </p>
           <Link
             href="/equipments"
@@ -168,11 +169,13 @@ export default function EquipmentDetailsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Image et informations de base */}
           <div>
-            <div className="rounded-lg overflow-hidden bg-gray-100 aspect-video mb-6">
-              <img 
+            <div className="rounded-lg overflow-hidden bg-gray-100 aspect-video mb-6 relative h-[300px]">
+              <Image 
                 src={equipment.imageURI} 
                 alt={equipment.name} 
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
             
@@ -280,7 +283,7 @@ export default function EquipmentDetailsPage() {
               
               {isAvailable === false && (
                 <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-                  Cet équipement n'est pas disponible pour les dates sélectionnées.
+                  Cet équipement n&apos;est pas disponible pour les dates sélectionnées.
                 </div>
               )}
               
