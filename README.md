@@ -2,6 +2,32 @@
 
 Un projet décentralisé de location d'équipements basé sur la blockchain Ethereum.
 
+## Réseau requis: Polygon Amoy Testnet
+
+Cette application fonctionne exclusivement sur le réseau **Polygon Amoy Testnet**. Assurez-vous d'avoir:
+
+1. Un portefeuille compatible Ethereum (Rabby, MetaMask, etc.)
+2. Le réseau Polygon Amoy configuré dans votre portefeuille
+3. Des tokens POL de test pour les transactions
+
+### Configuration manuelle du réseau Polygon Amoy
+
+Si votre portefeuille ne reconnaît pas automatiquement le réseau Polygon Amoy, ajoutez-le manuellement avec ces paramètres:
+
+```
+Nom du réseau: Polygon Amoy Testnet
+URL RPC: https://rpc-amoy.polygon.technology
+ID de chaîne: 80002
+Symbole: POL
+Explorateur de blocs: https://amoy.polygonscan.com/
+```
+
+> **Note pour les utilisateurs de Rabby**: Ces paramètres ont été testés et fonctionnent spécifiquement avec Rabby. Si vous rencontrez des problèmes, assurez-vous d'utiliser exactement ces valeurs.
+
+### Obtenir des POL de test
+
+Visitez le faucet officiel: https://amoy.polygonscan.com/faucet
+
 ## Composants du projet
 
 ### Smart Contracts
@@ -196,3 +222,37 @@ npm run build      # Construire pour la production
 ## Contribution
 
 Les contributions sont les bienvenues! Consultez [CONTRIBUTING.md](CONTRIBUTING.md) pour plus d'informations.
+
+## Déploiement des Smart Contracts
+
+### Prérequis
+- Un wallet Rabby configuré pour Polygon Amoy
+- Des tokens POL de test (obtenus via le faucet Polygon Amoy)
+- Une clé API Polygonscan (pour la vérification des contrats)
+
+### Configuration de l'environnement
+1. Copiez le fichier `.env.example` vers `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Configurez les variables suivantes dans le fichier `.env`:
+   - `PRIVATE_KEY`: Votre clé privée (sans le préfixe 0x)
+   - `POLYGONSCAN_API_KEY`: Votre clé API Polygonscan
+   - `POLYGON_AMOY_RPC_URL`: L'URL RPC de Polygon Amoy
+
+### Déploiement sécurisé
+1. Assurez-vous d'être dans le répertoire `contracts`
+2. Rendez le script de déploiement exécutable:
+   ```bash
+   chmod +x scripts/deploy.sh
+   ```
+3. Exécutez le script de déploiement:
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+### Sécurité
+- Ne partagez JAMAIS votre clé privée
+- N'utilisez que des wallets de test pour le développement
+- Changez immédiatement votre clé privée si elle est exposée
+- Ne committez jamais le fichier `.env` dans le dépôt Git

@@ -10,6 +10,23 @@ export default function Home() {
 
   return (
     <div className="animate-fade-in">
+      {/* Network notification */}
+      <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-8 shadow-sm">
+        <div className="flex items-start">
+          <div className="flex-shrink-0 mt-0.5">
+            <svg className="h-5 w-5 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-amber-800">Information importante</h3>
+            <div className="mt-1 text-sm text-amber-700">
+              <p>Cette application fonctionne exclusivement sur le réseau <strong>Polygon Amoy Testnet</strong>. Assurez-vous que votre portefeuille est configuré sur ce réseau. Des instructions détaillées apparaîtront si nécessaire.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* Section Hero avec animation */}
       <section className="py-16 md:py-24 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -72,9 +89,9 @@ export default function Home() {
                   <div className="bg-white/90 p-6 rounded-2xl shadow-lg text-center backdrop-blur-sm">
                     <h3 className="text-2xl font-bold text-blue-800 mb-2">BlockRent</h3>
                     <p className="text-gray-600">Location décentralisée</p>
-                  </div>
-                </div>
-              </div>
+            </div>
+          </div>
+            </div>
             </div>
           </motion.div>
         </div>
@@ -91,9 +108,9 @@ export default function Home() {
           >
             <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">Simple comme bonjour</span>
             <h2 className="text-3xl font-bold mt-4 mb-4">Comment ça marche ? 🤔</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Un processus en 3 étapes, aussi facile que de commander une pizza !
-            </p>
+          </p>
           </motion.div>
         </div>
         
@@ -265,7 +282,7 @@ export default function Home() {
                   Toutes les transactions sont sur la blockchain. Visibles par tous, modifiables par personne ! 👁️
                 </p>
               </div>
-            </div>
+          </div>
           </motion.div>
         </div>
       </section>
@@ -279,24 +296,24 @@ export default function Home() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl font-bold mb-6">Prêt à révolutionner vos locations ? 🚀</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             Rejoignez les centaines d&apos;utilisateurs qui ont déjà adopté la location décentralisée !
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/equipments">
+        </p>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Link href="/equipments">
               <Button variant="default" size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all">
-                Explorer les équipements
-              </Button>
-            </Link>
-            {!isConnected && (
+              Explorer les équipements
+            </Button>
+          </Link>
+          {!isConnected && (
               <Button variant="secondary" size="lg" onClick={connect} className="group">
                 <span>Connecter mon wallet</span>
                 <svg className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-              </Button>
-            )}
-          </div>
+            </Button>
+          )}
+        </div>
         </motion.div>
       </section>
     </div>

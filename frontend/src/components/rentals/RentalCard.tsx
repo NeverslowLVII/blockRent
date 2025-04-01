@@ -1,162 +1,144 @@
 'use client';
 
-import { Rental } from '@/types';
-import { formatPrice, formatDate } from '@/utils/formatters';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-
-import { Button } from '@/components/ui/button';
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardContent,
   CardFooter,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { RentalStatus, FormattedRental } from "@/types";
+
+// Helper function to format date
+const formatDate = (timestamp: number) => {
+  const date = new Date(timestamp);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  return `${day}/${month}`;
+};
 
 interface RentalCardProps {
-  rental: Rental;
-  onCancel: (rentalId: number) => void;
-  onMarkReturned: (rentalId: number) => void;
+  rental: FormattedRental;
+  onCancel?: () => void;
+  onMarkReturned?: () => void;
 }
 
 export default function RentalCard({ rental, onCancel, onMarkReturned }: RentalCardProps) {
-  // Déterminer le statut basé sur les propriétés de la location
-  const getStatus = () => {
-    if (rental.isCancelled) return 'cancelled';
-    if (rental.isReturned) return 'returned';
-    if (!rental.isActive) return 'completed';
-    if (!rental.isConfirmed) return 'pending';
-    return 'confirmed';
-  };
+  const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Determine status badge color
+  let statusColor = '';
+  switch (rental.status) {
+    case RentalStatus.PENDING:
+      statusColor = 'bg-yellow-100 border-yellow-400 text-yellow-800';
+      break;
+    case RentalStatus.CONFIRMED:
+      statusColor = 'bg-green-100 border-green-400 text-green-800';
+      break;
+    case RentalStatus.CANCELLED:
+      statusColor = 'bg-red-100 border-red-400 text-red-800';
+      break;
+    case RentalStatus.RETURNED:
+      statusColor = 'bg-blue-100 border-blue-400 text-blue-800';
+      break;
+    case RentalStatus.COMPLETED:
+      statusColor = 'bg-purple-100 border-purple-400 text-purple-800';
+      break;
+  }
 
-  // Déterminer la variante du badge en fonction du statut
-  const getBadgeVariant = () => {
-    switch (getStatus()) {
-      case 'cancelled': return 'destructive';
-      case 'returned': return 'default';
-      case 'completed': return 'secondary';
-      case 'pending': return 'outline';
-      case 'confirmed': return 'default';
-      default: return 'default';
+  const handleCancel = async () => {
+    if (onCancel) {
+      await onCancel();
     }
   };
 
-  // Traduire le statut en français et ajouter des emojis
-  const getStatusText = () => {
-    switch (getStatus()) {
-      case 'cancelled': return '❌ Annulée';
-      case 'returned': return '✅ Retournée';
-      case 'completed': return '🏁 Terminée';
-      case 'pending': return '⏳ En attente';
-      case 'confirmed': return '🔆 Confirmée';
-      default: return '❓ Inconnue';
+  const handleMarkReturned = async () => {
+    if (onMarkReturned) {
+      await onMarkReturned();
     }
-  };
-
-  // Animation pour les cartes
-  const cardVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-    hover: { y: -5, transition: { duration: 0.2 } }
   };
 
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      whileHover="hover"
-    >
-      <Card className="overflow-hidden border-2 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold mb-2 flex items-center gap-3">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <CardContent className="p-6">
+          <motion.div whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 300 }}>
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <span>
                   Location #{rental.id}
                 </span>
-                <motion.div
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                >
-                  <Badge variant={getBadgeVariant()} className="text-xs font-semibold">
-                    {getStatusText()}
-                  </Badge>
-                </motion.div>
+                <div className={`${statusColor} px-2 py-1 rounded text-sm border`}>
+                  {rental.status}
+                </div>
               </h2>
               <p className="text-gray-600">Équipement #{rental.equipmentId}</p>
             </div>
-            <motion.div 
-              className="mt-4 sm:mt-0"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="font-bold text-blue-600 block text-right text-xl">
-                {formatPrice(rental.totalAmount)}
-              </span>
-              <span className="text-gray-500 text-sm block text-right">
-                + {formatPrice(rental.deposit)} (caution)
-              </span>
-              <div className="text-right mt-1 flex items-center justify-end text-sm text-gray-500">
-                <svg className="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>
-                  {formatDate(rental.startDate).slice(0, 5)} - {formatDate(rental.endDate).slice(0, 5)}
+
+            <div className="flex justify-between items-end mb-4">
+              <div>
+                <div className="flex items-center text-sm text-gray-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 inline-block mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>
+                    {formatDate(rental.startDate)} - {formatDate(rental.endDate)}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <span className="font-bold text-blue-600 block text-right text-xl">
+                  {rental.totalAmount} ETH
+                </span>
+                <span className="text-gray-500 text-sm block text-right">
+                  + {rental.deposit} ETH (caution)
                 </span>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
+
+          <div className="flex justify-between mt-6">
+            <Link href={`/rentals/${rental.id}`} passHref>
+              <Button variant="outline">
+                Voir les détails
+              </Button>
+            </Link>
+
+            {rental.status === RentalStatus.CONFIRMED && (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="default"
+                  onClick={handleMarkReturned}
+                >
+                  Marquer comme retourné
+                </Button>
+              </motion.div>
+            )}
           </div>
         </CardContent>
-        
-        <CardFooter className="flex flex-wrap gap-2 pt-2 border-t">
-          <Button asChild variant="default" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 transition-all duration-300 group">
-            <Link href={`/rentals/${rental.id}`}>
-              <span className="flex items-center">
-                Voir les détails
-                <svg className="ml-1 w-4 h-4 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </span>
-            </Link>
-          </Button>
-          
-          {rental.isActive && !rental.isConfirmed && (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant="destructive"
-                onClick={() => onCancel(rental.id)}
-                className="group"
-              >
-                <span className="flex items-center">
-                  <svg className="w-4 h-4 mr-1 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Annuler
-                </span>
-              </Button>
-            </motion.div>
-          )}
-          
-          {rental.isActive && rental.isConfirmed && !rental.isReturned && (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant="outline"
-                onClick={() => onMarkReturned(rental.id)}
-                className="border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800 group"
-              >
-                <span className="flex items-center">
-                  <svg className="w-4 h-4 mr-1 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Retourné
-                </span>
-              </Button>
-            </motion.div>
-          )}
-        </CardFooter>
-      </Card>
-    </motion.div>
+      </motion.div>
+    </Card>
   );
 } 

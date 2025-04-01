@@ -27,13 +27,13 @@ export interface ContractAddresses {
 export const NETWORKS: Record<number, NetworkConfig> = {
   // Polygon Amoy (Testnet)
   80002: {
-    name: 'Polygon Amoy',
+    name: 'Polygon Amoy Testnet',
     chainId: 80002,
     rpcUrl: 'https://rpc-amoy.polygon.technology/',
-    blockExplorer: 'https://amoy.polygonscan.com',
+    blockExplorer: 'https://amoy.polygonscan.com/',
     isTestnet: true,
     currency: {
-      name: 'Polygon',
+      name: 'POL',
       symbol: 'POL',
       decimals: 18,
     },
@@ -42,11 +42,11 @@ export const NETWORKS: Record<number, NetworkConfig> = {
   137: {
     name: 'Polygon',
     chainId: 137,
-    rpcUrl: 'https://polygon-rpc.com',
-    blockExplorer: 'https://polygonscan.com',
+    rpcUrl: 'https://polygon-rpc.com/',
+    blockExplorer: 'https://polygonscan.com/',
     isTestnet: false,
     currency: {
-      name: 'Polygon',
+      name: 'MATIC',
       symbol: 'MATIC',
       decimals: 18,
     },
@@ -64,8 +64,8 @@ export const NETWORKS: Record<number, NetworkConfig> = {
 export const CONTRACT_ADDRESSES: Record<number, ContractAddresses> = {
   // Polygon Amoy (Testnet)
   80002: {
-    equipmentRegistry: '', // Adresse à remplir après le déploiement
-    rentalManager: '',     // Adresse à remplir après le déploiement
+    equipmentRegistry: '0xeF362e504937468103938c489a89b6f9f3ffDD6D',
+    rentalManager: '0xB466a7d6CEeacDf02e67fe459822AeEAdE0d4f1B',
   },
   // Polygon (Mainnet)
   137: {
@@ -80,11 +80,13 @@ export const DEFAULT_CHAIN_ID = 80002; // Polygon Amoy Testnet
 // ABIs des contrats (interfaces simplifiées pour TypeScript)
 export const EQUIPMENT_REGISTRY_ABI = [
   // Fonctions de lecture
+  'function equipments(uint256 equipmentId) external view returns (uint256 id, address owner, string name, string description, string imageURI, uint256 dailyRate, bool isAvailable, uint256 createdAt, uint256 updatedAt, bool isDeleted)',
   'function getEquipment(uint256 equipmentId) external view returns (tuple(uint256 id, address owner, string name, string description, string imageURI, uint256 dailyRate, bool isAvailable, uint256 createdAt, uint256 updatedAt, bool isDeleted))',
   'function totalEquipments() external view returns (uint256)',
   'function ownerEquipments(address owner, uint256 index) external view returns (uint256)',
   'function getOwnerEquipments(address owner) external view returns (uint256[])',
   'function isEquipmentAvailable(uint256 equipmentId) external view returns (bool)',
+  'function rentalManager() external view returns (address)',
   
   // Fonctions d'écriture
   'function registerEquipment(string memory name, string memory description, string memory imageURI, uint256 dailyRate) external returns (uint256)',
@@ -109,6 +111,7 @@ export const RENTAL_MANAGER_ABI = [
   'function totalRentals() external view returns (uint256)',
   'function serviceFeePercentage() external view returns (uint256)',
   'function platformOwner() external view returns (address)',
+  'function equipmentRegistry() external view returns (address)',
   
   // Fonctions d'écriture
   'function createRental(uint256 equipmentId, uint256 startDate, uint256 endDate) external payable returns (uint256)',
@@ -116,7 +119,7 @@ export const RENTAL_MANAGER_ABI = [
   'function cancelRental(uint256 rentalId) external',
   'function markEquipmentReturned(uint256 rentalId) external',
   'function returnDeposit(uint256 rentalId) external',
-  'function updateServiceFee(uint256 newFeePercentage) external',
+  'function updateServiceFee(uint256 newFeePercentage) external onlyPlatformOwner',
   
   // Événements
   'event RentalCreated(uint256 indexed rentalId, uint256 indexed equipmentId, address indexed renter, uint256 startDate, uint256 endDate, uint256 totalAmount, uint256 deposit)',

@@ -1,13 +1,14 @@
 export interface Equipment {
   id: number;
+  owner: string;
   name: string;
   description: string;
+  imageURI: string;
   dailyRate: string;
-  deposit: string;
   isAvailable: boolean;
-  owner: string;
-  imageUrl?: string;
   createdAt: number;
+  updatedAt: number;
+  isDeleted: boolean;
 }
 
 export interface Rental {
@@ -27,6 +28,19 @@ export interface Rental {
   isConfirmed: boolean;
   createdAt: number;
   updatedAt: number;
+}
+
+export enum RentalStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+  RETURNED = 'RETURNED',
+  COMPLETED = 'COMPLETED'
+}
+
+export interface FormattedRental extends Omit<Rental, 'isActive' | 'isReturned' | 'isCancelled' | 'isDepositReturned' | 'isConfirmed'> {
+  status: RentalStatus;
+  equipment?: Equipment;
 }
 
 export interface ContractsHookReturn {

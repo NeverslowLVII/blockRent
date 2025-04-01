@@ -13,7 +13,6 @@ import {
   CardFooter,
   CardHeader,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -28,23 +27,13 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
     >
       <Card className="overflow-hidden transition h-full bg-white border-2 hover:border-blue-200 hover:shadow-xl">
-        <div className="h-48 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <Image 
-                src={equipment.imageUrl || '/images/placeholder-equipment.jpg'} 
-                alt={equipment.name} 
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-          </div>
-          <div className="absolute top-3 right-3">
-            <Badge variant={equipment.isAvailable ? "default" : "destructive"} className="animate-pulse">
-              {equipment.isAvailable ? '✨ Disponible' : '🚫 Indisponible'}
-            </Badge>
-          </div>
+        <div className="relative h-48 bg-gray-100">
+          <Image 
+            src={equipment.imageURI || '/images/placeholder-equipment.jpg'}
+            alt={equipment.name}
+            fill
+            className="object-cover"
+          />
         </div>
         
         <CardHeader className="pt-6 pb-2">
@@ -86,4 +75,4 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
       </Card>
     </motion.div>
   );
-} 
+}

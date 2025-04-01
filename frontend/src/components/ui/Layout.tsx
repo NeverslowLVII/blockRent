@@ -6,13 +6,14 @@ import { formatAddress } from '@/utils/formatters';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Button } from "./button";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { isConnected, connect, account, disconnect, isLoading } = useContracts();
+  const { isConnected, connect, account, isLoading, error, networkInstructions, walletType } = useContracts();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -79,24 +80,16 @@ export default function Layout({ children }: LayoutProps) {
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                       {formatAddress(account || '')}
                     </span>
-                    <button
-                      onClick={disconnect}
-                      className="text-sm py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition font-medium hover:scale-105 active:scale-95"
-                    >
-                      Déconnecter
-                    </button>
                   </motion.div>
                 ) : (
-                  <motion.button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={connect}
-                    className="py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition font-medium"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    disabled={isLoading}
                   >
-                    Connecter
-                  </motion.button>
+                    {isLoading ? "Connexion..." : "Connecter"}
+                  </Button>
                 )
               )}
             </div>
@@ -120,6 +113,23 @@ export default function Layout({ children }: LayoutProps) {
       
       {/* Contenu principal */}
       <main className="flex-grow container mx-auto px-4 py-8 mb-24 md:mb-8 mt-20">
+        {mounted && networkInstructions && (
+          <div className="mb-6 p-4 border-l-4 border-blue-500 bg-blue-50 rounded-md">
+            <h3 className="text-lg font-semibold text-blue-700 mb-2">
+              Instructions pour ajouter le réseau Polygon Amoy {walletType !== 'unknown' && `dans ${walletType === 'rabby' ? 'Rabby' : 'MetaMask'}`}
+            </h3>
+            <pre className="whitespace-pre-wrap text-sm text-blue-800 bg-white p-3 rounded border border-blue-200">
+              {networkInstructions}
+            </pre>
+          </div>
+        )}
+        
+        {mounted && error && (
+          <div className="mb-6 p-4 border-l-4 border-red-500 bg-red-50 rounded-md">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+        
         {children}
       </main>
       
