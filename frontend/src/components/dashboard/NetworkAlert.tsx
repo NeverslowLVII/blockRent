@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
 export default function NetworkAlert() {
-  const { walletType, connect, isConnected, error, networkInstructions } = useContracts();
+  const { walletType, connect, error, networkInstructions } = useContracts();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch

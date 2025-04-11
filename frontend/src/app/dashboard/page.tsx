@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle, CardHeader, CardDescription, CardFooter } from "@/components/ui/card";
-import Loader from "@/components/ui/Loader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronRight, HomeIcon, Package, Calendar, DollarSign, Clock, Filter } from "lucide-react";
 import Link from "next/link";
 import { ethers } from "ethers";
-import { formatEtherSafe, formatDate } from "@/lib/utils";
+import { formatEtherSafe } from "@/lib/utils";
 
 // Types
 interface Equipment {
@@ -41,6 +40,20 @@ interface Rental {
   equipmentName?: string;
 }
 
+// Interface pour les données de location brutes
+interface RentalData {
+  id: number;
+  equipmentId: number;
+  renter: string;
+  startDate: number;
+  endDate: number;
+  totalAmount: bigint;
+  isActive: boolean;
+  isReturned: boolean;
+  isCancelled: boolean;
+  isDepositReturned: boolean;
+}
+
 export default function DashboardPage() {
   const { isConnected, connect, contracts, account } = useContracts();
   const [myEquipments, setMyEquipments] = useState<Equipment[]>([]);
@@ -57,38 +70,6 @@ export default function DashboardPage() {
     totalEarnings: BigInt(0),
     pendingReturns: 0
   });
-
-  useEffect(() => {
-    if (isConnected && contracts.equipmentRegistry && contracts.rentalManager) {
-      loadDashboardData();
-    } else {
-      setLoadingEquipments(false);
-      setLoadingRentals(false);
-    }
-  }, [isConnected, contracts.equipmentRegistry, contracts.rentalManager, account]);
-
-  const loadDashboardData = async () => {
-    try {
-      setError(null);
-      setLoadingEquipments(true);
-      setLoadingRentals(true);
-
-      // Charger les équipements et locations en parallèle
-      await Promise.all([
-        loadMyEquipments(),
-        loadMyRentals()
-      ]);
-
-      // Calculer les statistiques
-      calculateStats();
-    } catch (err) {
-      console.error("Erreur lors du chargement des données:", err);
-      setError("Une erreur est survenue lors du chargement des données.");
-    } finally {
-      setLoadingEquipments(false);
-      setLoadingRentals(false);
-    }
-  };
 
   const loadMyEquipments = async () => {
     if (!account || !contracts.equipmentRegistry) {
@@ -116,14 +97,16 @@ export default function DashboardPage() {
             });
           }
           currentId++;
-        } catch (err) {
+        } catch (error) {
+          // Fin des équipements disponibles ou erreur de lecture
+          console.log("Fin de la lecture des équipements ou erreur:", error instanceof Error ? error.message : "Erreur inconnue");
           break;
         }
       }
 
       setMyEquipments(equipmentsList);
-    } catch (err) {
-      console.error("Erreur lors du chargement des équipements:", err);
+    } catch (error) {
+      console.error("Erreur lors du chargement des équipements:", error instanceof Error ? error.message : "Erreur inconnue");
       setError("Impossible de charger vos équipements.");
     }
   };
@@ -168,7 +151,7 @@ export default function DashboardPage() {
     }
   };
 
-  const determineRentalStatus = (rentalData: any): RentalStatus => {
+  const determineRentalStatus = (rentalData: RentalData): RentalStatus => {
     if (rentalData.isCancelled) return RentalStatus.CANCELLED;
     if (rentalData.isReturned && rentalData.isDepositReturned) return RentalStatus.COMPLETED;
     if (rentalData.isReturned) return RentalStatus.RETURNED;
@@ -200,6 +183,40 @@ export default function DashboardPage() {
       pendingReturns
     });
   };
+
+  const loadDashboardData = useCallback(async () => {
+    try {
+      setError(null);
+      setLoadingEquipments(true);
+      setLoadingRentals(true);
+
+      // Charger les équipements et locations en parallèle
+      await Promise.all([
+        loadMyEquipments(),
+        loadMyRentals()
+      ]);
+
+      // Calculer les statistiques
+      calculateStats();
+    } catch (error) {
+      console.error("Erreur lors du chargement des données:", error instanceof Error ? error.message : "Erreur inconnue");
+      setError("Une erreur est survenue lors du chargement des données.");
+    } finally {
+      setLoadingEquipments(false);
+      setLoadingRentals(false);
+    }
+  }, [loadMyEquipments, loadMyRentals, calculateStats]);
+
+  // Utilisation d'ESLint disable pour ce hook spécifique car la fonction est déclarée dans le composant
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (isConnected && contracts.equipmentRegistry && contracts.rentalManager) {
+      loadDashboardData();
+    } else {
+      setLoadingEquipments(false);
+      setLoadingRentals(false);
+    }
+  }, [isConnected, contracts.equipmentRegistry, contracts.rentalManager, account]);
 
   const getFilteredRentals = () => {
     if (activeRentalFilter === "all") return myRentals;

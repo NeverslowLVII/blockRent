@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package, Clock, Tag, User, Calendar } from 'lucide-react';
+import { Package, Tag, Calendar } from 'lucide-react';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -33,9 +33,9 @@ export default function EquipmentCard({ equipment, highlightNew = false }: Equip
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       className="h-full"
     >
-      <Card className="overflow-hidden h-full flex flex-col border-2 hover:border-blue-200 hover:shadow-lg transition-all duration-300 bg-white">
+      <Card className="overflow-hidden h-full flex flex-col border hover:border-blue-200/70 hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm">
         {/* Image container avec overlay si indisponible */}
-        <div className="relative aspect-video bg-gray-100 overflow-hidden group">
+        <div className="relative aspect-video bg-gray-50 overflow-hidden group">
           {!imageError ? (
             <Image 
               src={equipment.imageURI || '/images/placeholder-equipment.jpg'}
@@ -55,7 +55,7 @@ export default function EquipmentCard({ equipment, highlightNew = false }: Equip
           {/* Badge "Nouveau" si applicable */}
           {isNewEquipment && (
             <div className="absolute top-2 left-2 z-10">
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 font-semibold">
+              <Badge variant="outline" className="bg-blue-100/80 text-blue-800 border-blue-200 font-semibold backdrop-blur-sm">
                 NOUVEAU
               </Badge>
             </div>
@@ -63,7 +63,7 @@ export default function EquipmentCard({ equipment, highlightNew = false }: Equip
           
           {/* Badge de disponibilité */}
           <div className="absolute top-2 right-2 z-10">
-            <Badge variant="outline" className={colorScheme.badge}>
+            <Badge variant="outline" className={`${colorScheme.badge} backdrop-blur-sm`}>
               {equipment.isAvailable ? 'Disponible' : 'Indisponible'}
             </Badge>
           </div>
@@ -110,15 +110,16 @@ export default function EquipmentCard({ equipment, highlightNew = false }: Equip
         </CardContent>
         
         <CardFooter className="pt-0 pb-4">
-          <Button asChild variant="default" className="w-full group">
+          <Button asChild variant="default" className="w-full group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-600 hover:to-indigo-500">
             <Link href={`/equipments/${equipment.id}`}>
-              <span className="flex items-center justify-center">
+              <span className="relative z-10 flex items-center justify-center font-medium">
                 Voir les détails
                 <svg className="ml-1.5 w-4 h-4 transition-transform duration-300 transform group-hover:translate-x-1" 
                   fill="none" stroke="currentColor" viewBox="0 0 24 24" 
                   xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
+                <span className="absolute inset-0 -z-10 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-indigo-600 to-blue-500"></span>
               </span>
             </Link>
           </Button>

@@ -1,18 +1,9 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { RentalStatus, FormattedRental } from "@/types";
 
 // Helper function to format date
@@ -30,9 +21,6 @@ interface RentalCardProps {
 }
 
 export default function RentalCard({ rental, onCancel, onMarkReturned }: RentalCardProps) {
-  const router = useRouter();
-  const [isExpanded, setIsExpanded] = useState(false);
-  
   // Determine status badge color
   let statusColor = '';
   switch (rental.status) {
@@ -52,13 +40,13 @@ export default function RentalCard({ rental, onCancel, onMarkReturned }: RentalC
       statusColor = 'bg-purple-100 border-purple-400 text-purple-800';
       break;
   }
-
+  
   const handleCancel = async () => {
     if (onCancel) {
       await onCancel();
     }
   };
-
+  
   const handleMarkReturned = async () => {
     if (onMarkReturned) {
       await onMarkReturned();

@@ -3,19 +3,17 @@
 import { Rental, RentalStatus, Equipment } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatAddress } from "@/utils/formatters";
+import { formatAddress } from "@/lib/utils";
 import { formatRental } from '@/lib/adapters';
 
 interface RentalDetailsProps {
   rental: Rental;
   equipment?: Equipment;
   onCancel?: () => void;
-  onConfirm?: () => void;
   onMarkReturned?: () => void;
 }
 
-export default function RentalDetails({ rental, equipment, onCancel, onConfirm, onMarkReturned }: RentalDetailsProps) {
+export default function RentalDetails({ rental, equipment, onCancel, onMarkReturned }: RentalDetailsProps) {
   const formattedRental = formatRental(rental, equipment);
   
   // Determine status badge color

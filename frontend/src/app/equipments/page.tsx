@@ -4,34 +4,20 @@ import { useState, useEffect, useMemo } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Loader from "@/components/ui/Loader";
-import Link from "next/link";
-import { ethers } from "ethers";
-import { Package, Filter, Search, SlidersHorizontal, Plus, ArrowUpDown } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Package } from "lucide-react";
 import EquipmentCard from "@/components/equipments/EquipmentCard";
 import { formatEtherSafe } from "@/lib/utils";
 import { Equipment } from "@/types";
+import { motion } from "framer-motion";
+import { PackageX } from "lucide-react";
+import { EquipmentFilters } from "@/components/equipments/EquipmentFilters";
+import { EquipmentCardSkeleton } from "@/components/equipments/EquipmentCardSkeleton";
 
 export default function EquipmentsPage() {
   const { isConnected, connect, contracts, account } = useContracts();
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
   
   // Filtres et tri
@@ -39,6 +25,7 @@ export default function EquipmentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState<string>("all");
   const [sortOption, setSortOption] = useState<string>("newest");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -73,6 +60,7 @@ export default function EquipmentsPage() {
               });
             }
             currentId++;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (err) {
             break;
           }
@@ -91,6 +79,7 @@ export default function EquipmentsPage() {
   }, [isConnected, contracts.equipmentRegistry]);
 
   // Filtrage et tri des équipements
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const filteredAndSortedEquipments = useMemo(() => {
     // Étape 1: Filtrer par onglets (tous, les miens, disponibles)
     let filtered = [...equipments];
@@ -157,10 +146,10 @@ export default function EquipmentsPage() {
               <div className="flex flex-col items-center max-w-md mx-auto">
                 <Package className="w-16 h-16 text-gray-300 mb-4" />
                 <p className="text-xl font-semibold text-gray-800 mb-2">
-                  Connectez-vous pour découvrir notre catalogue d'équipements
+                  Connectez-vous pour découvrir notre catalogue d&apos;équipements
                 </p>
                 <p className="text-gray-600 mb-8">
-                  Parcourez notre sélection d'équipements disponibles à la location ou ajoutez les vôtres.
+                  Parcourez notre sélection d&apos;équipements disponibles à la location ou ajoutez les vôtres.
                 </p>
                 <Button size="lg" onClick={connect}>
                   Connecter mon portefeuille
@@ -174,202 +163,106 @@ export default function EquipmentsPage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Équipements</h1>
-            <p className="text-gray-600 mt-1">
-              {filteredAndSortedEquipments.length} équipement{filteredAndSortedEquipments.length !== 1 ? 's' : ''}
-              {searchQuery ? ` pour "${searchQuery}"` : ''}
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/equipments/new" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Ajouter un équipement
-            </Link>
-          </Button>
+    <div className="container px-4 py-8 mx-auto max-w-6xl">
+      <div className="relative space-y-8">
+        {/* Background elements */}
+        <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
+          <div className="absolute top-1/4 -left-40 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 -right-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/3 right-1/3 w-60 h-60 bg-indigo-200/20 rounded-full blur-3xl"></div>
         </div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-4"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Équipements disponibles
+          </h1>
+          <p className="text-gray-600 max-w-prose">
+            Découvrez notre sélection d&apos;équipements disponibles à la location. Utilisez les filtres 
+            ci-dessous pour affiner votre recherche.
+          </p>
+        </motion.div>
 
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-grow">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <Input
-                  placeholder="Rechercher un équipement..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="all" className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
-                    Tous
-                  </TabsTrigger>
-                  <TabsTrigger value="available" className="flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    Disponibles
-                  </TabsTrigger>
-                  <TabsTrigger value="mine" className="flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    Mes équipements
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => setShowFilters(!showFilters)}
-                className={showFilters ? "bg-blue-50 text-blue-600" : ""}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <ArrowUpDown className="h-4 w-4" />
-                    <span className="hidden md:inline">Trier</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setSortOption("newest")}>
-                    Plus récents
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortOption("oldest")}>
-                    Plus anciens
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortOption("priceAsc")}>
-                    Prix croissant
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortOption("priceDesc")}>
-                    Prix décroissant
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="p-4 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100">
+            <EquipmentFilters
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              searchTerm={searchQuery}
+              setSearchTerm={setSearchQuery}
+              availabilityFilter={activeTab}
+              setAvailabilityFilter={setActiveTab}
+              sortOrder={sortOption}
+              setSortOrder={setSortOption}
+            />
           </div>
-          
-          {/* Filtres avancés */}
-          {showFilters && (
-            <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-grow">
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Gamme de prix (ETH)</label>
-                  <Select value={priceRange} onValueChange={setPriceRange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Toutes les gammes de prix" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les prix</SelectItem>
-                      <SelectItem value="0-0.1">Moins de 0.1 ETH</SelectItem>
-                      <SelectItem value="0.1-0.5">0.1 - 0.5 ETH</SelectItem>
-                      <SelectItem value="0.5-1">0.5 - 1 ETH</SelectItem>
-                      <SelectItem value="1-5">1 - 5 ETH</SelectItem>
-                      <SelectItem value="5-">Plus de 5 ETH</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        </motion.div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"
+          >
             {[...Array(6)].map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-0">
-                  <Skeleton className="h-48 w-full rounded-t-lg" />
-                  <div className="p-4 space-y-3">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-10 w-full rounded-md" />
-                  </div>
-                </CardContent>
-              </Card>
+              <EquipmentCardSkeleton key={i} />
             ))}
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 text-red-600 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">Erreur</h3>
-            <p>{error}</p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              Réessayer
-            </Button>
-          </div>
-        ) : filteredAndSortedEquipments.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-16">
-              {searchQuery || priceRange !== "all" || activeTab !== "all" ? (
-                <div className="flex flex-col items-center max-w-md mx-auto">
-                  <Package className="w-16 h-16 text-gray-300 mb-4" />
-                  <p className="text-xl font-semibold text-gray-800 mb-2">
-                    Aucun équipement ne correspond à votre recherche
-                  </p>
-                  <p className="text-gray-600 mb-8">
-                    Essayez de modifier vos critères de recherche ou d'afficher tous les équipements.
-                  </p>
-                  <div className="flex gap-4">
-                    <Button 
-                      variant="outline"
-                      onClick={() => {
-                        setSearchQuery("");
-                        setPriceRange("all");
-                        setActiveTab("all");
-                        setShowFilters(false);
-                      }}
-                    >
-                      Réinitialiser les filtres
-                    </Button>
-                    <Button asChild>
-                      <Link href="/equipments/new">
-                        Ajouter un équipement
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center max-w-md mx-auto">
-                  <Package className="w-16 h-16 text-gray-300 mb-4" />
-                  <p className="text-xl font-semibold text-gray-800 mb-2">
-                    Aucun équipement n'est disponible pour le moment
-                  </p>
-                  <p className="text-gray-600 mb-8">
-                    Soyez le premier à ajouter un équipement à louer sur la plateforme !
-                  </p>
-                  <Button asChild>
-                    <Link href="/equipments/new">
-                      Ajouter mon premier équipement
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          </motion.div>
+        ) : equipments.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+              {equipments.map((equipment, index) => (
+                <motion.div
+                  key={equipment.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 * (index % 3) }}
+                >
+                  <EquipmentCard equipment={equipment} />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAndSortedEquipments.map((equipment) => (
-              <EquipmentCard 
-                key={equipment.id} 
-                equipment={equipment} 
-                highlightNew={Date.now() / 1000 - equipment.createdAt < 7 * 24 * 60 * 60} // Moins de 7 jours
-              />
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center mt-12 py-16 text-center space-y-4"
+          >
+            <div className="rounded-full bg-gray-100/80 p-6">
+              <PackageX size={48} className="text-gray-400" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-700">Aucun équipement trouvé</h2>
+            <p className="text-gray-500 max-w-md">
+              Nous n&apos;avons trouvé aucun équipement correspondant à vos critères de recherche. Essayez d&apos;ajuster vos filtres.
+            </p>
+            <Button 
+              onClick={() => {
+                setSearchQuery('');
+                setPriceRange('all');
+                setActiveTab('all');
+                setSortOption('newest');
+              }}
+              variant="outline"
+              className="mt-4"
+            >
+              Réinitialiser les filtres
+            </Button>
+          </motion.div>
         )}
       </div>
     </div>

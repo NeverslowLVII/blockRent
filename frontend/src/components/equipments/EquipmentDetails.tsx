@@ -1,7 +1,7 @@
 import { Equipment } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice, formatDate, formatAddress } from "@/utils/formatters";
+import { formatAddress, formatDate } from "@/lib/utils";
 import Image from "next/image";
 import { enhanceEquipment } from '@/lib/adapters';
 
@@ -27,10 +27,10 @@ export default function EquipmentDetails({ equipment }: EquipmentDetailsProps) {
         
         <div className="mt-4 sm:mt-0">
           <span className="font-semibold text-blue-600 block text-right">
-            {formatPrice(equipment.dailyRate.toString())}/jour
+            {equipment.dailyRate.toString()} ETH/jour
           </span>
           <span className="text-gray-500 text-sm block text-right">
-            Caution: {formatPrice(enhancedEquipment.deposit.toString())}
+            Caution: {enhancedEquipment.deposit} ETH
           </span>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function EquipmentDetails({ equipment }: EquipmentDetailsProps) {
         <div className="border-t pt-4">
           <div className="space-y-2">
             <div>
-              <p className="text-sm text-gray-500">Date d'ajout</p>
+              <p className="text-sm text-gray-500">Date d&apos;ajout</p>
               <p className="mt-1">{formatDate(equipment.createdAt)}</p>
             </div>
             
