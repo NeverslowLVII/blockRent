@@ -37,10 +37,21 @@ export function formatRental(rental: Rental, equipment?: Equipment): FormattedRe
     endDate: rental.endDate,
     dailyRate: rental.dailyRate,
     deposit: rental.deposit,
-    totalAmount: rental.totalAmount,
-    createdAt: rental.createdAt,
-    updatedAt: rental.updatedAt,
+    totalAmount: rental.totalAmount.toString(),
     status,
-    equipment
+    equipment,
+    durationInDays: calculateDurationInDays(rental.startDate, rental.endDate),
+    isPastDue: isPastDue(rental.endDate),
+    formattedDailyRate: ethers.formatEther(rental.dailyRate),
+    formattedDeposit: ethers.formatEther(rental.deposit),
+    formattedTotalAmount: ethers.formatEther(rental.totalAmount)
   };
+}
+
+function calculateDurationInDays(startDate: number, endDate: number): number {
+  return Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000));
+}
+
+function isPastDue(endDate: number): boolean {
+  return Date.now() > endDate;
 } 

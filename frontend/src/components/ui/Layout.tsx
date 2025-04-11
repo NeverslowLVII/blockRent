@@ -1,221 +1,361 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { useContracts } from '@/lib/hooks/useContracts';
-import { formatAddress } from '@/utils/formatters';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from "./button";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useContracts } from "@/lib/hooks/useContracts";
+import { formatAddress } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Home,
+  Package,
+  Calendar,
+  User,
+  Menu,
+  X,
+  ChevronRight,
+  Github,
+  ExternalLink,
+  HelpCircle
+} from "lucide-react";
 
-interface LayoutProps {
-  children: ReactNode;
-}
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const { isConnected, connect, disconnect, account } = useContracts();
+  const [isMounted, setIsMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
-export default function Layout({ children }: LayoutProps) {
-  const { isConnected, connect, account, isLoading, error, networkInstructions, walletType } = useContracts();
-  const [mounted, setMounted] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  // Detect scroll for styling header
+  // Effet pour hydrater le composant côté client
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    setIsMounted(true);
   }, []);
 
-  // Avoid hydration issues
+  // Fermer le menu mobile lors du changement de route
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Définition des liens de navigation
+  const navigationLinks = [
+    {
+      name: "Accueil",
+      href: "/",
+      icon: <Home className="h-5 w-5" />,
+      active: pathname === "/"
+    },
+    {
+      name: "Tableau de bord",
+      href: "/dashboard",
+      icon: <Home className="h-5 w-5" />,
+      active: pathname === "/dashboard",
+      requiresAuth: true
+    },
+    {
+      name: "Équipements",
+      href: "/equipments",
+      icon: <Package className="h-5 w-5" />,
+      active: pathname.startsWith("/equipments")
+    },
+    {
+      name: "Mes locations",
+      href: "/rentals",
+      icon: <Calendar className="h-5 w-5" />,
+      active: pathname.startsWith("/rentals"),
+      requiresAuth: true
+    }
+  ];
+  
+  // Empêcher le flash initial lors du rendu
+  if (!isMounted) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white overflow-hidden">
-      {/* Header avec navigation */}
-      <header 
-        className={`fixed w-full top-0 z-10 transition-all duration-300 ${
-          scrolled 
-            ? 'bg-white/90 backdrop-blur-lg shadow-md border-b border-gray-200/50' 
-            : 'bg-white border-b border-gray-200'
-        }`}
-      >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-10">
-              <Link href="/" className="relative group">
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 relative z-10 group-hover:opacity-80 transition-opacity">
-                    BlockRent
-                  </span>
-                  <span className="absolute -bottom-1 left-0 h-1 w-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded group-hover:w-full transition-all duration-300"></span>
-                </motion.div>
-              </Link>
-              
-              <nav className="hidden md:flex gap-6">
-                <NavLink href="/equipments" label="Équipements" />
-                <NavLink href="/rentals" label="Mes locations" />
-                {isConnected && mounted && (
-                  <NavLink href="/dashboard" label="Tableau de bord" />
-                )}
-              </nav>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-30 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          {/* Logo et nom du site */}
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">B</div>
+              <span className="text-xl font-bold text-gray-900">BlockRent</span>
             </div>
+          </Link>
 
-            <div>
-              {mounted && !isLoading && (
-                isConnected ? (
-                  <motion.div 
-                    className="flex items-center gap-4"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <span className="hidden md:flex text-sm text-gray-600 bg-gradient-to-r from-blue-50 to-purple-50 py-1 px-4 rounded-full items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                      {formatAddress(account || '')}
-                    </span>
-                  </motion.div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={connect}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Connexion..." : "Connecter"}
-                  </Button>
-                )
-              )}
-            </div>
+          {/* Navigation sur desktop */}
+          <nav className="hidden md:flex md:items-center md:space-x-6">
+            {navigationLinks.map((link) => 
+              !link.requiresAuth || (link.requiresAuth && isConnected) ? (
+                <Link
+                  href={link.href}
+                  key={link.name}
+                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-blue-600 ${
+                    link.active ? "text-blue-600" : "text-gray-600"
+                  }`}
+                >
+                  {link.icon}
+                  {link.name}
+                  {link.active && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 h-[2px] w-full bg-blue-600"
+                      layoutId="activeSection"
+                    />
+                  )}
+                </Link>
+              ) : null
+            )}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-4">
+            {/* Bouton de connexion/déconnexion */}
+            {isConnected ? (
+              <div className="hidden md:flex md:items-center md:gap-4">
+                <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-sm text-blue-700">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <span className="font-mono">{formatAddress(account || "")}</span>
+                </div>
+                
+                <Button
+                  onClick={disconnect}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Déconnecter
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={connect} 
+                variant="default" 
+                className="hidden md:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                size="sm"
+              >
+                Connecter mon wallet
+              </Button>
+            )}
+
+            {/* Bouton du menu mobile */}
+            <Button
+              onClick={() => setMobileMenuOpen(true)}
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              aria-label="Menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
-      
-      {/* Navigation mobile */}
-      <motion.div 
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg z-10 rounded-t-xl border-t border-gray-200"
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-      >
-        <div className="flex items-center justify-around">
-          <MobileNavLink href="/" icon={HomeIcon} label="Accueil" />
-          <MobileNavLink href="/equipments" icon={EquipmentIcon} label="Équipements" />
-          <MobileNavLink href="/rentals" icon={RentalIcon} label="Locations" />
-        </div>
-      </motion.div>
-      
+
+      {/* Menu mobile */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 md:hidden"
+          >
+            <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+            
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 20 }}
+              className="fixed inset-y-0 right-0 z-40 w-full max-w-xs bg-white shadow-xl"
+            >
+              <div className="flex h-16 items-center justify-between px-6 border-b">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">B</div>
+                  <span className="text-xl font-bold text-gray-900">BlockRent</span>
+                </div>
+                <Button
+                  onClick={() => setMobileMenuOpen(false)}
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-500 hover:text-gray-900"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="space-y-1 px-3 py-4">
+                {/* Navigation mobile */}
+                <div className="space-y-1 py-3">
+                  {navigationLinks.map((link) => 
+                    !link.requiresAuth || (link.requiresAuth && isConnected) ? (
+                      <Link
+                        href={link.href}
+                        key={link.name}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ${
+                          link.active
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                      >
+                        {link.icon}
+                        {link.name}
+                        <ChevronRight className={`ml-auto h-4 w-4 ${link.active ? "text-blue-500" : "text-gray-400"}`} />
+                      </Link>
+                    ) : null
+                  )}
+                </div>
+
+                {/* Statut de connexion mobile */}
+                <div className="my-6 border-t border-gray-100 pt-6">
+                  {isConnected ? (
+                    <>
+                      <div className="mb-4 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <User className="h-6 w-6 text-gray-600" />
+                          <div>
+                            <p className="text-xs text-gray-500">Connecté en tant que</p>
+                            <p className="font-mono text-sm">{formatAddress(account || "")}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={disconnect}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Déconnecter
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={connect}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                    >
+                      Connecter mon wallet
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Liens externes */}
+                <div className="space-y-1 border-t border-gray-100 pt-6">
+                  <a
+                    href="https://github.com/NeverslowLVII/blockRent"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  >
+                    <Github className="h-5 w-5" />
+                    Code source
+                    <ExternalLink className="ml-auto h-4 w-4 text-gray-400" />
+                  </a>
+                  <a
+                    href="#"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  >
+                    <HelpCircle className="h-5 w-5" />
+                    Aide
+                    <ExternalLink className="ml-auto h-4 w-4 text-gray-400" />
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Contenu principal */}
-      <main className="flex-grow container mx-auto px-4 py-8 mb-24 md:mb-8 mt-20">
-        {mounted && networkInstructions && (
-          <div className="mb-6 p-4 border-l-4 border-blue-500 bg-blue-50 rounded-md">
-            <h3 className="text-lg font-semibold text-blue-700 mb-2">
-              Instructions pour ajouter le réseau Polygon Amoy {walletType !== 'unknown' && `dans ${walletType === 'rabby' ? 'Rabby' : 'MetaMask'}`}
-            </h3>
-            <pre className="whitespace-pre-wrap text-sm text-blue-800 bg-white p-3 rounded border border-blue-200">
-              {networkInstructions}
-            </pre>
-          </div>
-        )}
-        
-        {mounted && error && (
-          <div className="mb-6 p-4 border-l-4 border-red-500 bg-red-50 rounded-md">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
-        
+      <main className="flex-1 bg-gray-50">
         {children}
       </main>
-      
+
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-50 to-purple-50 shadow-inner py-8 mt-auto hidden md:block rounded-t-3xl">
+      <footer className="border-t bg-white py-8">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-0">
-              <p className="text-sm text-gray-600 flex items-center">
-                <span className="font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 mr-1">
-                  BlockRent
-                </span>
-                &copy; {new Date().getFullYear()} - Location décentralisée
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">B</div>
+                <span className="text-xl font-bold">BlockRent</span>
+              </div>
+              <p className="mt-2 text-sm text-gray-600">
+                Location d'équipements sur blockchain
               </p>
             </div>
-            <div className="flex gap-6">
-              <FooterLink href="#" label="Conditions" />
-              <FooterLink href="#" label="Confidentialité" />
-              <FooterLink href="#" label="Contact" />
+
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-3 md:gap-16">
+              <div>
+                <h3 className="mb-3 text-sm font-medium text-gray-900">Produit</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <Link href="/" className="text-sm text-gray-600 hover:text-blue-600">
+                      Accueil
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/equipments" className="text-sm text-gray-600 hover:text-blue-600">
+                      Équipements
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard" className="text-sm text-gray-600 hover:text-blue-600">
+                      Tableau de bord
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="mb-3 text-sm font-medium text-gray-900">Ressources</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="https://github.com/NeverslowLVII/blockRent"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-600 hover:text-blue-600"
+                    >
+                      GitHub
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-sm text-gray-600 hover:text-blue-600"
+                    >
+                      Documentation
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="mb-3 text-sm font-medium text-gray-900">Légal</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <a href="#" className="text-sm text-gray-600 hover:text-blue-600">
+                      Conditions d'utilisation
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-sm text-gray-600 hover:text-blue-600">
+                      Politique de confidentialité
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
+          </div>
+
+          <div className="mt-8 border-t border-gray-200 pt-8">
+            <p className="text-center text-sm text-gray-600">
+              &copy; {new Date().getFullYear()} BlockRent. Tous droits réservés.
+            </p>
           </div>
         </div>
       </footer>
     </div>
-  );
-}
-
-function NavLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="text-gray-600 hover:text-blue-600 transition font-medium relative group"
-    >
-      {label}
-      <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
-    </Link>
-  );
-}
-
-function MobileNavLink({ href, icon: Icon, label }: { href: string; icon: React.FC; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center py-3 px-2 text-gray-600 hover:text-blue-600 relative group"
-    >
-      <div className="relative">
-        <Icon />
-        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-0 rounded-full bg-blue-500 group-hover:w-4 transition-all duration-300"></span>
-      </div>
-      <span className="text-xs mt-1 font-medium">{label}</span>
-    </Link>
-  );
-}
-
-function FooterLink({ href, label }: { href: string; label: string }) {
-  return (
-    <a 
-      href={href} 
-      className="text-sm text-gray-600 hover:text-blue-600 transition-all duration-300 hover:scale-105"
-    >
-      {label}
-    </a>
-  );
-}
-
-// Icons
-function HomeIcon() {
-  return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
-  );
-}
-
-function EquipmentIcon() {
-  return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-    </svg>
-  );
-}
-
-function RentalIcon() {
-  return (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-    </svg>
   );
 } 

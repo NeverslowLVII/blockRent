@@ -1,7 +1,7 @@
 'use client';
 
 import { useContracts } from '@/lib/hooks/useContracts';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
 export default function NetworkAlert() {

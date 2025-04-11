@@ -231,6 +231,26 @@ export const useContracts = () => {
     }
   };
 
+  // Fonction pour se déconnecter du portefeuille
+  const disconnect = async () => {
+    try {
+      // Réinitialiser l'état
+      setAccount(null);
+      setIsConnected(false);
+      setContracts({
+        equipmentRegistry: null,
+        rentalManager: null
+      });
+      
+      // Stocker dans localStorage qu'on a déconnecté volontairement
+      localStorage.setItem('walletDisconnected', 'true');
+      
+      console.log('Déconnecté avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
+
   // Vérifier si déjà connecté au chargement
   useEffect(() => {
     const initProvider = async () => {
@@ -359,6 +379,7 @@ export const useContracts = () => {
     isLoading,
     error,
     networkInstructions,
-    walletType
+    walletType,
+    disconnect
   };
 }; 

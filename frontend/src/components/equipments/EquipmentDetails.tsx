@@ -27,10 +27,10 @@ export default function EquipmentDetails({ equipment }: EquipmentDetailsProps) {
         
         <div className="mt-4 sm:mt-0">
           <span className="font-semibold text-blue-600 block text-right">
-            {formatPrice(equipment.dailyRate)}/jour
+            {formatPrice(equipment.dailyRate.toString())}/jour
           </span>
           <span className="text-gray-500 text-sm block text-right">
-            Caution: {formatPrice(enhancedEquipment.deposit)}
+            Caution: {formatPrice(enhancedEquipment.deposit.toString())}
           </span>
         </div>
       </div>

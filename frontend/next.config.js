@@ -5,15 +5,11 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    domains: ['*'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
+        hostname: '*',
         pathname: '**',
       },
     ],
