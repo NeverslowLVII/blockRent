@@ -5,7 +5,7 @@ import { useContracts } from "@/lib/hooks/useContracts";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/ui/Loader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ethers } from "ethers";
 import { Package } from "lucide-react";

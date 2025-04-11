@@ -2,7 +2,7 @@
 
 import { Rental, RentalStatus, Equipment } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { formatAddress } from "@/lib/utils";
 import { formatRental } from '@/lib/adapters';
 

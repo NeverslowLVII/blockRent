@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useContracts } from '@/lib/hooks/useContracts';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -193,11 +193,12 @@ export default function Home() {
                                 {/* Logo déplacé plus bas pour éviter la notch */}
                                 <div className="w-full flex items-center justify-between mt-5">
                                   <motion.div 
-                                    className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                                    className="w-9 h-9 flex items-center justify-center"
                                     whileHover={{ scale: 1.1 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                  >B</motion.div>
-                                  <span className="ml-2 mr-auto font-semibold text-gray-900">BlockRent</span>
+                                  >
+                                    <img src="/blockrent.svg" alt="BlockRent Logo" className="h-8" />
+                                  </motion.div>
                                   <div className="flex space-x-2">
                                     <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
                                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

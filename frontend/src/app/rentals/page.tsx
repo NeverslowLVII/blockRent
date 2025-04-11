@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
 import Loader from "@/components/ui/Loader";
 import RentalCard from "@/components/rentals/RentalCard";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Rental, FormattedRental } from "@/types";
 import { ethers } from "ethers";

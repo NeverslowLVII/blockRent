@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle, CardHeader, CardDescription, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronRight, HomeIcon, Package, Calendar, DollarSign, Clock, Filter } from "lucide-react";

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useContracts } from "@/lib/hooks/useContracts";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Package } from "lucide-react";
 import EquipmentCard from "@/components/equipments/EquipmentCard";

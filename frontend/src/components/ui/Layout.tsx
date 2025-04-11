@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { useContracts } from "@/lib/hooks/useContracts";
 import { formatAddress } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -87,8 +87,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Logo et nom du site */}
           <Link href="/" className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">B</div>
-              <span className="text-xl font-bold text-gray-900">BlockRent</span>
+              <img src="/blockrent.svg" alt="BlockRent Logo" className="h-8" />
             </div>
           </Link>
 
@@ -285,8 +284,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-0">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">B</div>
-                <span className="text-xl font-bold">BlockRent</span>
+                <img src="/blockrent.svg" alt="BlockRent Logo" className="h-8" />
               </div>
               <p className="mt-2 text-sm text-gray-600">
                 Location d&apos;équipements sur blockchain
