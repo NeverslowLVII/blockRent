@@ -52,6 +52,9 @@ contract RentalManager {
     // Adresse du propriétaire de la plateforme pour percevoir les frais
     address public platformOwner;
     
+    // Protection contre la réentrance
+    bool private locked;
+    
     // Événements
     event RentalCreated(uint256 indexed rentalId, uint256 indexed equipmentId, address indexed renter, uint256 startDate, uint256 endDate, uint256 totalAmount, uint256 deposit);
     event RentalConfirmed(uint256 indexed rentalId, uint256 indexed equipmentId, address indexed owner);
@@ -91,6 +94,14 @@ contract RentalManager {
         _;
     }
     
+    // Modifier de protection contre la réentrance
+    modifier nonReentrant() {
+        require(!locked, unicode"Réentrance non autorisée");
+        locked = true;
+        _;
+        locked = false;
+    }
+    
     /**
      * @dev Constructeur qui initialise le contrat avec une référence à l'EquipmentRegistry
      * @param _equipmentRegistry Adresse du contrat EquipmentRegistry
@@ -98,6 +109,7 @@ contract RentalManager {
     constructor(address _equipmentRegistry) {
         equipmentRegistry = EquipmentRegistry(_equipmentRegistry);
         platformOwner = msg.sender;
+        locked = false;
     }
     
     // Fallback et Receive pour accepter les paiements
@@ -110,7 +122,7 @@ contract RentalManager {
      * @param _startDate Date de début de la location (timestamp Unix)
      * @param _endDate Date de fin de la location (timestamp Unix)
      */
-    function createRental(uint256 _equipmentId, uint256 _startDate, uint256 _endDate) external payable returns (uint256) {
+    function createRental(uint256 _equipmentId, uint256 _startDate, uint256 _endDate) external payable nonReentrant returns (uint256) {
         // Vérification des paramètres
         require(_endDate > _startDate, unicode"La date de fin doit être postérieure à la date de début");
         require(_startDate >= block.timestamp, unicode"La date de début doit être dans le futur");
@@ -184,28 +196,26 @@ contract RentalManager {
     function confirmRental(uint256 _rentalId) external 
         rentalExists(_rentalId) 
         onlyOwner(_rentalId) 
-        rentalIsActive(_rentalId) 
+        rentalIsActive(_rentalId)
+        nonReentrant
     {
         Rental storage rental = rentals[_rentalId];
         require(!rental.isConfirmed, unicode"Cette location a déjà été confirmée");
         
         // Calcul des frais de service
         uint256 serviceFee = (rental.totalAmount * serviceFeePercentage) / 10000;
-        
-        // Paiement au propriétaire après déduction des frais de service
         uint256 ownerPayment = rental.totalAmount - serviceFee;
         
-        // Transfert au propriétaire
+        // Pattern check-effects-interactions : d'abord mise à jour des états
+        rental.isConfirmed = true;
+        rental.updatedAt = block.timestamp;
+        
+        // Puis les transferts (interactions)
         (bool ownerSuccess, ) = payable(rental.owner).call{value: ownerPayment}("");
         require(ownerSuccess, unicode"Le transfert au propriétaire a échoué");
         
-        // Transfert des frais de service au propriétaire de la plateforme
         (bool platformSuccess, ) = payable(platformOwner).call{value: serviceFee}("");
         require(platformSuccess, unicode"Le transfert des frais a échoué");
-        
-        // Mise à jour du statut
-        rental.isConfirmed = true;
-        rental.updatedAt = block.timestamp;
         
         emit RentalConfirmed(_rentalId, rental.equipmentId, msg.sender);
     }
@@ -217,7 +227,8 @@ contract RentalManager {
     function cancelRental(uint256 _rentalId) external 
         rentalExists(_rentalId) 
         rentalIsActive(_rentalId) 
-        rentalNotReturned(_rentalId) 
+        rentalNotReturned(_rentalId)
+        nonReentrant
     {
         Rental storage rental = rentals[_rentalId];
         
@@ -227,11 +238,22 @@ contract RentalManager {
             unicode"Seul le locataire ou le propriétaire peut annuler la location"
         );
         
+        // Mise à jour du statut avant les transferts (check-effects-interactions)
+        rental.isActive = false;
+        rental.isCancelled = true;
+        rental.isDepositReturned = true;
+        rental.updatedAt = block.timestamp;
+        
+        // Rend l'équipement disponible à nouveau
+        equipmentRegistry.setEquipmentAvailability(rental.equipmentId, true);
+        
+        uint256 refundAmount;
+        uint256 ownerPayment = 0;
+        uint256 serviceFee = 0;
+        
         // Si la location n'a pas encore commencé, remboursement complet
         if (block.timestamp < rental.startDate) {
-            // Rembourse le montant total + caution au locataire
-            (bool success, ) = payable(rental.renter).call{value: rental.totalAmount + rental.deposit}("");
-            require(success, unicode"Le remboursement a échoué");
+            refundAmount = rental.totalAmount + rental.deposit;
         } else {
             // Si la location a déjà commencé, calcul au prorata
             uint256 durationInDays = (rental.endDate - rental.startDate + 86399) / 86400;
@@ -246,31 +268,28 @@ contract RentalManager {
             uint256 amountToCharge = rental.dailyRate * elapsedDays;
             
             // Calcul du remboursement
-            uint256 refundAmount = rental.totalAmount - amountToCharge;
+            refundAmount = rental.totalAmount - amountToCharge + rental.deposit;
             
-            // Remboursement au locataire
-            (bool renterSuccess, ) = payable(rental.renter).call{value: refundAmount + rental.deposit}("");
-            require(renterSuccess, unicode"Le remboursement au locataire a échoué");
-            
-            // Paiement au propriétaire
-            uint256 serviceFee = (amountToCharge * serviceFeePercentage) / 10000;
-            uint256 ownerPayment = amountToCharge - serviceFee;
-            
+            // Calcul du paiement au propriétaire
+            serviceFee = (amountToCharge * serviceFeePercentage) / 10000;
+            ownerPayment = amountToCharge - serviceFee;
+        }
+        
+        // Remboursement au locataire
+        (bool renterSuccess, ) = payable(rental.renter).call{value: refundAmount}("");
+        require(renterSuccess, unicode"Le remboursement au locataire a échoué");
+        
+        // Paiement au propriétaire si nécessaire
+        if (ownerPayment > 0) {
             (bool ownerSuccess, ) = payable(rental.owner).call{value: ownerPayment}("");
             require(ownerSuccess, unicode"Le paiement au propriétaire a échoué");
-            
+        }
+        
+        // Paiement des frais de service si nécessaire
+        if (serviceFee > 0) {
             (bool platformSuccess, ) = payable(platformOwner).call{value: serviceFee}("");
             require(platformSuccess, unicode"Le paiement des frais de service a échoué");
         }
-        
-        // Mise à jour du statut
-        rental.isActive = false;
-        rental.isCancelled = true;
-        rental.isDepositReturned = true;
-        rental.updatedAt = block.timestamp;
-        
-        // Rend l'équipement disponible à nouveau
-        equipmentRegistry.setEquipmentAvailability(rental.equipmentId, true);
         
         emit RentalCancelled(_rentalId, rental.equipmentId, msg.sender);
     }
@@ -284,12 +303,13 @@ contract RentalManager {
         rentalExists(_rentalId) 
         onlyOwner(_rentalId) 
         rentalIsActive(_rentalId) 
-        rentalNotReturned(_rentalId) 
+        rentalNotReturned(_rentalId)
+        nonReentrant
     {
         Rental storage rental = rentals[_rentalId];
         require(rental.isConfirmed, unicode"La location doit d'abord être confirmée");
         
-        // Marque l'équipement comme retourné
+        // Marque l'équipement comme retourné avant les transferts
         rental.isReturned = true;
         rental.updatedAt = block.timestamp;
         
@@ -298,10 +318,10 @@ contract RentalManager {
         
         // Si retourné sans dommage, rembourse la caution
         if (_withoutDamage) {
+            rental.isDepositReturned = true;
+            
             (bool success, ) = payable(rental.renter).call{value: rental.deposit}("");
             require(success, unicode"Le remboursement de la caution a échoué");
-            
-            rental.isDepositReturned = true;
             
             emit DepositReturned(_rentalId, rental.equipmentId, rental.renter, rental.deposit);
         } else {
@@ -321,7 +341,8 @@ contract RentalManager {
         rentalExists(_rentalId) 
         onlyRenter(_rentalId) 
         rentalIsActive(_rentalId) 
-        rentalNotReturned(_rentalId) 
+        rentalNotReturned(_rentalId)
+        nonReentrant
     {
         Rental storage rental = rentals[_rentalId];
         require(rental.isConfirmed, unicode"La location doit d'abord être confirmée");
@@ -329,17 +350,17 @@ contract RentalManager {
         // Vérifie que la période de location est terminée depuis plus de 3 jours
         require(block.timestamp > rental.endDate + 3 days, unicode"La période de grâce n'est pas encore terminée");
         
-        // Rembourse la caution
-        (bool success, ) = payable(rental.renter).call{value: rental.deposit}("");
-        require(success, unicode"Le remboursement de la caution a échoué");
-        
-        // Mise à jour du statut
+        // D'abord mise à jour des états
         rental.isReturned = true;
         rental.isDepositReturned = true;
         rental.updatedAt = block.timestamp;
         
         // Rend l'équipement disponible à nouveau
         equipmentRegistry.setEquipmentAvailability(rental.equipmentId, true);
+        
+        // Puis transfert de la caution
+        (bool success, ) = payable(rental.renter).call{value: rental.deposit}("");
+        require(success, unicode"Le remboursement de la caution a échoué");
         
         emit DepositReturned(_rentalId, rental.equipmentId, rental.renter, rental.deposit);
         emit EquipmentReturned(_rentalId, rental.equipmentId, rental.owner);
