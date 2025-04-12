@@ -1,55 +1,68 @@
-## Foundry
+## BlockRent - Smart Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**Ce dossier contient les smart contracts pour la plateforme BlockRent, une application de location d'équipements décentralisée.**
 
-Foundry consists of:
+Les contrats sont développés avec Foundry, un toolkit modulaire pour le développement d'applications Ethereum écrit en Rust.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Contrats principaux
+
+- **EquipmentRegistry.sol**: Gestion de l'enregistrement et du suivi des équipements
+- **RentalManager.sol**: Gestion du processus de location (création, confirmation, retour)
 
 ## Documentation
 
-https://book.getfoundry.sh/
+Documentation de Foundry: https://book.getfoundry.sh/
 
-## Usage
+## Installation
 
-### Build
+```shell
+$ forge install
+```
+
+## Utilisation
+
+### Compilation
 
 ```shell
 $ forge build
 ```
 
-### Test
+### Tests
 
 ```shell
 $ forge test
 ```
 
-### Format
+### Formatage
 
 ```shell
 $ forge fmt
 ```
 
-### Gas Snapshots
+### Captures de gas
 
 ```shell
 $ forge snapshot
 ```
 
-### Anvil
+### Anvil (nœud local)
 
 ```shell
 $ anvil
 ```
 
-### Deploy
+### Déploiement
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ forge script script/Deploy.s.sol:DeployScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```
+
+Pour déployer sur Polygon Amoy Testnet, utilisez le script bash:
+
+```shell
+$ ./script/deploy.sh
+```
+Assurez-vous d'avoir un fichier `.env` avec les variables nécessaires (voir `.env.example` à la racine du projet).
 
 ### Cast
 
@@ -57,7 +70,7 @@ $ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --pri
 $ cast <subcommand>
 ```
 
-### Help
+### Aide
 
 ```shell
 $ forge --help

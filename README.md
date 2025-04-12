@@ -10,8 +10,6 @@
 
 BlockRent révolutionne la location d'équipements en connectant directement propriétaires et locataires grâce à la technologie blockchain. Fini les intermédiaires coûteux, les délais de paiement et les procédures compliquées : louez en quelques clics, avec des garanties automatisées et une transparence totale !
 
-![Demo BlockRent](https://github.com/NeverslowLVII/blockRent/raw/master/docs/preview.png)
-
 ## ✨ Caractéristiques Principales
 
 - **💸 Zéro Commission** - Transactions directes entre particuliers
@@ -19,7 +17,7 @@ BlockRent révolutionne la location d'équipements en connectant directement pro
 - **⚡ Paiements Instantanés** - Fini l'attente de 3-5 jours pour les remboursements
 - **👁️ Transparence Totale** - Toutes les transactions sont visibles sur la blockchain
 - **🌐 Interface Intuitive** - Une expérience utilisateur moderne et fluide
-- **📱 Responsive Design** - Parfaitement optimisé pour mobile, tablette et desktop
+- **📱 Design Responsive** - Parfaitement optimisé pour mobile, tablette et desktop
 
 ## 🔧 Technologie
 
@@ -82,7 +80,7 @@ Visitez le faucet officiel: https://amoy.polygonscan.com/faucet
 ## 📁 Structure du projet
 
 ```
-blockchain-renting/
+blockRent/
 ├── contracts/            # Smart contracts Solidity
 │   ├── src/              # Code source des contrats
 │   ├── test/             # Tests des contrats
@@ -144,7 +142,7 @@ npm run build      # Construire pour la production
    Copiez le fichier `.env.example` en `.env` et complétez les informations:
 
    ```
-   PRIVATE_KEY=votre_clé_privée_sans_0x
+   PRIVATE_KEY=votre_clé_privée_avec_0x
    POLYGONSCAN_API_KEY=votre_clé_api_polygonscan
    ```
 2. **Déployer les contrats**
@@ -155,7 +153,7 @@ npm run build      # Construire pour la production
    ```
 3. **Mettre à jour les adresses des contrats**
 
-   Mettez à jour les adresses dans `frontend/src/lib/contracts/config.ts`
+   Mettez à jour les adresses dans le fichier d'environnement de votre frontend
 
 ### Déploiement du Frontend
 
@@ -171,14 +169,6 @@ npm run build      # Construire pour la production
    NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_clé_anonyme_supabase
    ```
 4. Déployez!
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues! Proposez des améliorations via des pull requests ou signalez des problèmes dans les issues GitHub.
-
-## 📜 Licence
-
-Ce projet est sous licence MIT. Voir le fichier LICENSE.md pour plus de détails.
 
 ---
 

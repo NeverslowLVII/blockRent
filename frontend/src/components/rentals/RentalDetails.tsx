@@ -16,23 +16,23 @@ interface RentalDetailsProps {
 export default function RentalDetails({ rental, equipment, onCancel, onMarkReturned }: RentalDetailsProps) {
   const formattedRental = formatRental(rental, equipment);
   
-  // Determine status badge color
+  // Determine status color based on status
   let statusColor = '';
   switch (formattedRental.status) {
     case RentalStatus.PENDING:
-      statusColor = 'bg-yellow-100 border-yellow-400 text-yellow-800';
+      statusColor = 'bg-yellow-100 text-yellow-800 border border-yellow-300';
       break;
     case RentalStatus.CONFIRMED:
-      statusColor = 'bg-green-100 border-green-400 text-green-800';
+      statusColor = 'bg-green-100 text-green-800 border border-green-300';
       break;
     case RentalStatus.CANCELLED:
-      statusColor = 'bg-red-100 border-red-400 text-red-800';
+      statusColor = 'bg-red-100 text-red-800 border border-red-300';
       break;
     case RentalStatus.RETURNED:
-      statusColor = 'bg-blue-100 border-blue-400 text-blue-800';
+      statusColor = 'bg-blue-100 text-blue-800 border border-blue-300';
       break;
     case RentalStatus.COMPLETED:
-      statusColor = 'bg-purple-100 border-purple-400 text-purple-800';
+      statusColor = 'bg-purple-100 text-purple-800 border border-purple-300';
       break;
   }
 
@@ -65,54 +65,65 @@ export default function RentalDetails({ rental, equipment, onCancel, onMarkRetur
               </div>
               <div>
                 <p className="text-sm text-gray-500">Tarif journalier</p>
-                <p className="font-medium">{rental.dailyRate} ETH</p>
+                <p className="font-medium">{formattedRental.formattedDailyRate} ETH</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Caution</p>
-                <p className="font-medium">{rental.deposit} ETH</p>
+                <p className="font-medium">{formattedRental.formattedDeposit} ETH</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Montant total</p>
-                <p className="font-medium">{rental.totalAmount} ETH</p>
+                <p className="font-medium">{formattedRental.formattedTotalAmount} ETH</p>
               </div>
             </div>
           </div>
-
+          
           <div>
-            <h3 className="text-lg font-semibold mb-4">Participants</h3>
+            <h3 className="text-lg font-semibold mb-4">Informations</h3>
             <div className="space-y-4">
               <div>
+                <p className="text-sm text-gray-500">ID de la location</p>
+                <p className="font-medium">#{formattedRental.id}</p>
+              </div>
+              <div>
                 <p className="text-sm text-gray-500">Propriétaire</p>
-                <p className="font-mono text-sm break-all">
-                  {formatAddress(rental.owner)}
-                </p>
+                <p className="font-medium">{formatAddress(formattedRental.owner)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Locataire</p>
-                <p className="font-mono text-sm break-all">
-                  {formatAddress(rental.renter)}
-                </p>
+                <p className="font-medium">{formatAddress(formattedRental.renter)}</p>
               </div>
+              {formattedRental.isPastDue && formattedRental.status === RentalStatus.CONFIRMED && (
+                <div className="mt-4 p-3 bg-red-50 text-red-800 rounded-md">
+                  <p className="font-medium">Location en retard</p>
+                  <p className="text-sm">Cette location aurait dû être retournée.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end space-x-4">
-          {(formattedRental.status === RentalStatus.PENDING || formattedRental.status === RentalStatus.CONFIRMED) && (
-            <>
-              {formattedRental.status === RentalStatus.PENDING && onCancel && (
-                <Button variant="destructive" onClick={onCancel}>
-                  Annuler la location
-                </Button>
-              )}
-              {formattedRental.status === RentalStatus.CONFIRMED && onMarkReturned && (
-                <Button variant="default" onClick={onMarkReturned}>
-                  Marquer comme retourné
-                </Button>
-              )}
-            </>
-          )}
-        </div>
+        {(formattedRental.status === RentalStatus.PENDING || formattedRental.status === RentalStatus.CONFIRMED) && (
+          <div className="flex justify-end space-x-4 mt-6">
+            {formattedRental.status === RentalStatus.PENDING && onCancel && (
+              <Button 
+                variant="destructive"
+                onClick={onCancel}
+              >
+                Annuler la location
+              </Button>
+            )}
+            
+            {formattedRental.status === RentalStatus.CONFIRMED && onMarkReturned && (
+              <Button
+                variant="default"
+                onClick={onMarkReturned}
+              >
+                Marquer comme retourné
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

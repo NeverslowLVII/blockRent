@@ -10,7 +10,8 @@ import { ethers } from 'ethers';
 import { getContracts } from '../contracts/config';
 
 // Network configuration for Amoy testnet
-const AMOY_CHAIN_ID = '0x13882'; // 80002 in decimal
+const AMOY_CHAIN_ID_DECIMAL = 80002;
+const AMOY_CHAIN_ID = '0x' + AMOY_CHAIN_ID_DECIMAL.toString(16); // Convert to hex format
 const AMOY_NETWORK = {
   chainId: AMOY_CHAIN_ID,
   chainName: 'Polygon Amoy Testnet',
@@ -32,7 +33,7 @@ const getManualNetworkInstructions = () => {
     3. Entrez les informations suivantes:
        - Nom du réseau: Polygon Amoy Testnet
        - URL RPC: https://rpc-amoy.polygon.technology
-       - ID de chaîne: 80002
+       - ID de chaîne: ${AMOY_CHAIN_ID_DECIMAL} (ou ${AMOY_CHAIN_ID} en hexadécimal)
        - Symbole: POL
        - Explorateur de blocs: https://amoy.polygonscan.com/
     
@@ -56,12 +57,14 @@ const detectWalletType = () => {
 
 // Vérifier si nous sommes sur un réseau Polygon (mais pas Amoy)
 const isOnPolygonNetwork = (chainId: string) => {
-  // Polygone Mainnet: 0x89, Mumbai: 0x13881
-  // Nous vérifions si l'utilisateur est sur un réseau Polygon mais pas Amoy
-  const polygonNetworks = ['0x89', '0x13881'];
-  return chainId.startsWith('0x') && 
-    polygonNetworks.includes(chainId) &&
-    chainId !== AMOY_CHAIN_ID;
+  // Polygon Mainnet: 0x89 (137), Mumbai: 0x13881 (80001), Amoy: 0x13882 (80002)
+  const polygonNetworks = ['0x89', '0x13881']; // Réseaux Polygon autres qu'Amoy
+  
+  // Normaliser le chainId pour assurer une comparaison cohérente
+  const normalizedChainId = chainId.startsWith('0x') ? chainId.toLowerCase() : '0x' + parseInt(chainId).toString(16);
+  const normalizedAmoyId = AMOY_CHAIN_ID.toLowerCase();
+  
+  return normalizedChainId !== normalizedAmoyId && polygonNetworks.includes(normalizedChainId);
 };
 
 // Obtenir un message d'erreur personnalisé en fonction du réseau actuel
@@ -153,6 +156,9 @@ export const useContracts = () => {
       setError(null);
       setNetworkInstructions(null);
       
+      // Effacer le drapeau de déconnexion volontaire
+      localStorage.removeItem('walletDisconnected');
+      
       if (!window.ethereum) {
         throw new Error("Aucun portefeuille Ethereum détecté. Veuillez installer Rabby ou MetaMask.");
       }
@@ -168,9 +174,18 @@ export const useContracts = () => {
       
       // Vérifier le réseau actuel
       const network = await ethProvider.getNetwork();
-      const chainId = '0x' + network.chainId.toString(16);
       
-      if (chainId !== AMOY_CHAIN_ID) {
+      // Convertir le chainId en format hexadécimal avec préfixe 0x
+      const chainIdNumber = Number(network.chainId);
+      const chainId = '0x' + chainIdNumber.toString(16);
+      
+      console.log("Réseau actuel (décimal):", chainIdNumber, "Réseau actuel (hex):", chainId);
+      console.log("Amoy attendu (décimal):", AMOY_CHAIN_ID_DECIMAL, "Amoy attendu (hex):", AMOY_CHAIN_ID);
+      
+      // Comparaison normalisée des IDs
+      const isOnAmoy = chainId.toLowerCase() === AMOY_CHAIN_ID.toLowerCase();
+      
+      if (!isOnAmoy) {
         console.log("Réseau actuel:", chainId, "Tentative de changement vers Amoy:", AMOY_CHAIN_ID);
         
         // Message spécifique si on est sur un autre réseau Polygon
@@ -187,7 +202,7 @@ export const useContracts = () => {
       const userAddress = await signer.getAddress();
       
       // Initialisation des contrats
-      const contractInstances = await getContracts(window.ethereum);
+      const contractInstances = await getContracts(ethProvider);
       
       // Vérifier que les contrats sont bien initialisés
       if (!contractInstances.equipmentRegistry || !contractInstances.rentalManager) {
@@ -197,7 +212,7 @@ export const useContracts = () => {
       // Vérification de la connectivité avec le réseau
       try {
         // Vérifier si le code est déployé à l'adresse du contrat
-        const code = await window.ethereum.getCode(contractInstances.equipmentRegistry.target);
+        const code = await ethProvider.getCode(contractInstances.equipmentRegistry.target);
         if (code === '0x' || code === '0x0') {
           throw new Error("Le contrat n'est pas déployé à l'adresse spécifiée sur ce réseau. Vérifiez que vous êtes sur le réseau Polygon Amoy.");
         }
@@ -223,6 +238,9 @@ export const useContracts = () => {
         rentalManager: contractInstances.rentalManager,
       });
       setIsConnected(true);
+      
+      // Recharger la page après une connexion réussie
+      window.location.reload();
     } catch (err: any) {
       console.error("Erreur lors de la connexion:", err);
       setError(err.message || "Erreur lors de la connexion au portefeuille. Veuillez réessayer.");
@@ -246,6 +264,11 @@ export const useContracts = () => {
       // Stocker dans localStorage qu'on a déconnecté volontairement
       localStorage.setItem('walletDisconnected', 'true');
       
+      // Forcer la déconnexion en rechargeant la page (approche courante pour les dApps)
+      // Cette méthode fonctionne car nous réinitialisons l'état et 
+      // au rechargement, initProvider ne reconnectera pas automatiquement
+      window.location.reload();
+      
       console.log('Déconnecté avec succès');
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
@@ -255,6 +278,14 @@ export const useContracts = () => {
   // Initialisation automatique du provider au montage du composant
   useEffect(() => {
     const initProvider = async () => {
+      // Vérifier si l'utilisateur s'est déconnecté volontairement
+      const wasDisconnected = localStorage.getItem('walletDisconnected') === 'true';
+      
+      // Si déconnecté volontairement, ne pas reconnecter automatiquement
+      if (wasDisconnected) {
+        return;
+      }
+      
       if (typeof window.ethereum !== 'undefined') {
         try {
           const ethProvider = new ethers.BrowserProvider(window.ethereum);

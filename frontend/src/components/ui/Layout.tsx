@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { useContracts } from "@/lib/hooks/useContracts";
-import { formatAddress } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,9 +18,10 @@ import {
   ExternalLink,
   HelpCircle
 } from "lucide-react";
+import WalletConnect from "./WalletConnect";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { isConnected, connect, disconnect, account } = useContracts();
+  const { isConnected } = useContracts();
   const [isMounted, setIsMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -117,41 +117,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            {/* Bouton de connexion/déconnexion */}
-            {isConnected ? (
-              <div className="hidden md:flex md:items-center md:gap-4">
-                <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-sm text-blue-700">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="font-mono">{formatAddress(account || "")}</span>
-                </div>
-                
-                <Button
-                  onClick={disconnect}
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Déconnecter
-                </Button>
-              </div>
-            ) : (
-              <Button 
-                onClick={connect} 
-                variant="default" 
-                className="hidden md:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
-                size="sm"
-              >
-                Connecter mon wallet
-              </Button>
-            )}
-
+            {/* Lien GitHub */}
+            <a
+              href="https://github.com/NeverslowLVII/blockRent"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+            
+            {/* Bouton de connexion / déconnexion */}
+            <WalletConnect />
+            
             {/* Bouton du menu mobile */}
             <Button
               onClick={() => setMobileMenuOpen(true)}
-              variant="outline"
+              variant="ghost"
               size="icon"
               className="md:hidden"
-              aria-label="Menu"
+              aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -216,34 +201,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {/* Statut de connexion mobile */}
-                <div className="my-6 border-t border-gray-100 pt-6">
-                  {isConnected ? (
-                    <>
-                      <div className="mb-4 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <User className="h-6 w-6 text-gray-600" />
-                          <div>
-                            <p className="text-xs text-gray-500">Connecté en tant que</p>
-                            <p className="font-mono text-sm">{formatAddress(account || "")}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={disconnect}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        Déconnecter
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      onClick={connect}
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
-                    >
-                      Connecter mon wallet
-                    </Button>
-                  )}
+                <div className="px-5 py-6 border-t border-gray-200">
+                  <div className="flex flex-col space-y-3">
+                    <WalletConnect />
+                  </div>
                 </div>
                 
                 {/* Liens externes */}

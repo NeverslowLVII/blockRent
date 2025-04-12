@@ -98,10 +98,10 @@ export default function RentalCard({ rental, onCancel, onMarkReturned }: RentalC
               </div>
               <div>
                 <span className="font-bold text-blue-600 block text-right text-xl">
-                  {rental.totalAmount} ETH
+                  {rental.formattedTotalAmount} ETH
                 </span>
                 <span className="text-gray-500 text-sm block text-right">
-                  + {rental.deposit} ETH (caution)
+                  + {rental.formattedDeposit} ETH (caution)
                 </span>
               </div>
             </div>

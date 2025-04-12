@@ -27,6 +27,27 @@ export function formatRental(rental: Rental, equipment?: Equipment): FormattedRe
   } else if (rental.isConfirmed && rental.isReturned) {
     status = RentalStatus.COMPLETED;
   }
+
+  // Helper function to safely format values that might be decimals
+  const formatValue = (value: string | bigint): string => {
+    // If it's already a bigint, just format it
+    if (typeof value === 'bigint') {
+      return ethers.formatEther(value);
+    }
+    
+    try {
+      // If it's a decimal string like "0.001", it's already in ETH format
+      if (value.includes('.')) {
+        return value;
+      }
+      
+      // Otherwise, it's likely in wei format and needs to be formatted
+      return ethers.formatEther(BigInt(value));
+    } catch (e) {
+      console.error("Error formatting value:", value, e);
+      return "0";
+    }
+  };
   
   return {
     id: rental.id,
@@ -42,9 +63,9 @@ export function formatRental(rental: Rental, equipment?: Equipment): FormattedRe
     equipment,
     durationInDays: calculateDurationInDays(rental.startDate, rental.endDate),
     isPastDue: isPastDue(rental.endDate),
-    formattedDailyRate: ethers.formatEther(rental.dailyRate),
-    formattedDeposit: ethers.formatEther(rental.deposit),
-    formattedTotalAmount: ethers.formatEther(rental.totalAmount)
+    formattedDailyRate: formatValue(rental.dailyRate),
+    formattedDeposit: formatValue(rental.deposit),
+    formattedTotalAmount: formatValue(rental.totalAmount)
   };
 }
 

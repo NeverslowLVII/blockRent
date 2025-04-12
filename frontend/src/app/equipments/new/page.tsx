@@ -12,12 +12,28 @@ import Loader from "@/components/ui/Loader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, Upload, Link as LinkIcon } from "lucide-react";
 import { createClient } from '@supabase/supabase-js';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import NetworkGuideModal from "@/components/ui/NetworkGuideModal";
 
 // Initialiser le client Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+// Schéma de validation zod
+const equipmentSchema = z.object({
+  name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }).max(50, { message: "Le nom ne doit pas dépasser 50 caractères" }),
+  description: z.string().min(20, { message: "La description doit contenir au moins 20 caractères" }).max(1000, { message: "La description ne doit pas dépasser 1000 caractères" }),
+  imageURI: z.string().url({ message: "Veuillez fournir une URL d'image valide" }).or(z.string().length(0)),
+  dailyRate: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+    message: "Le tarif journalier doit être un nombre positif",
+  }),
+});
+
+type EquipmentFormValues = z.infer<typeof equipmentSchema>;
 
 export default function NewEquipmentPage() {
   const router = useRouter();
@@ -26,12 +42,32 @@ export default function NewEquipmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<"upload" | "url">("upload");
   const [preview, setPreview] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    imageURI: "",
-    dailyRate: "",
+  const [showNetworkGuide, setShowNetworkGuide] = useState(false);
+  
+  // Initialiser React Hook Form
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    watch,
+  } = useForm<EquipmentFormValues>({
+    resolver: zodResolver(equipmentSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      imageURI: "",
+      dailyRate: "",
+    },
   });
+
+  // Observer les changements d'URL d'image
+  const imageURI = watch("imageURI");
+
+  // Mettre à jour la prévisualisation quand l'URL change (en mode URL)
+  if (imageTab === "url" && imageURI && !preview) {
+    setPreview(imageURI);
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,7 +112,7 @@ export default function NewEquipmentPage() {
         .getPublicUrl(fileName);
 
       // Mettre à jour le formulaire avec l'URL de l'image
-      setFormData(prev => ({ ...prev, imageURI: publicUrl }));
+      setValue("imageURI", publicUrl);
       setPreview(URL.createObjectURL(file));
 
     } catch (err: any) {
@@ -87,12 +123,20 @@ export default function NewEquipmentPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = async (data: EquipmentFormValues) => {
     if (!isConnected) {
-      connect();
-      return;
+      try {
+        await connect();
+      } catch (err: any) {
+        // Si l'erreur contient le message concernant l'ajout manuel du réseau
+        if (err.message && (
+          err.message.includes("ajouter manuellement") || 
+          err.message.includes("Rabby nécessite un ajout manuel")
+        )) {
+          setShowNetworkGuide(true);
+        }
+        return;
+      }
     }
 
     if (!contracts.equipmentRegistry) {
@@ -104,36 +148,34 @@ export default function NewEquipmentPage() {
       setIsLoading(true);
       setError(null);
 
-      // Validation des champs
-      if (!formData.name || !formData.description || !formData.dailyRate) {
-        throw new Error("Veuillez remplir tous les champs obligatoires");
-      }
-
-      if (!formData.imageURI) {
-        throw new Error("Veuillez ajouter une image");
+      // Vérifie que l'image a été fournie
+      if (!data.imageURI) {
+        setError("Veuillez ajouter une image");
+        setIsLoading(false);
+        return;
       }
 
       // Convertir le tarif journalier en wei
-      const dailyRateWei = ethers.parseEther(formData.dailyRate);
+      const dailyRateWei = ethers.parseEther(data.dailyRate);
 
       // Estimer les frais de gas
       const gasEstimate = await contracts.equipmentRegistry.registerEquipment.estimateGas(
-        formData.name,
-        formData.description,
-        formData.imageURI,
+        data.name,
+        data.description,
+        data.imageURI,
         dailyRateWei
       );
 
       // Enregistrer l'équipement avec des paramètres de gas optimisés
       const tx = await contracts.equipmentRegistry.registerEquipment(
-        formData.name,
-        formData.description,
-        formData.imageURI,
+        data.name,
+        data.description,
+        data.imageURI,
         dailyRateWei,
         {
           gasLimit: gasEstimate + (gasEstimate / BigInt(5)),
-          maxFeePerGas: ethers.parseUnits("0.1", "gwei"),
-          maxPriorityFeePerGas: ethers.parseUnits("0.1", "gwei")
+          maxFeePerGas: ethers.parseUnits("50", "gwei"),
+          maxPriorityFeePerGas: ethers.parseUnits("30", "gwei")
         }
       );
 
@@ -157,14 +199,6 @@ export default function NewEquipmentPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    if (name === "imageURI" && imageTab === "url") {
-      setPreview(value);
-    }
-    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   if (!isConnected) {
@@ -196,19 +230,20 @@ export default function NewEquipmentPage() {
 
         <Card>
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   Nom de l&apos;équipement
                 </label>
                 <Input
                   id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
+                  {...register("name")}
                   placeholder="Ex: Tractopelle CAT"
-                  required
+                  aria-invalid={errors.name ? "true" : "false"}
                 />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                )}
               </div>
 
               <div>
@@ -217,13 +252,14 @@ export default function NewEquipmentPage() {
                 </label>
                 <Textarea
                   id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
+                  {...register("description")}
                   placeholder="Décrivez votre équipement en détail..."
-                  required
                   rows={4}
+                  aria-invalid={errors.description ? "true" : "false"}
                 />
+                {errors.description && (
+                  <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                )}
               </div>
 
               <div>
@@ -258,13 +294,15 @@ export default function NewEquipmentPage() {
                   </TabsContent>
                   <TabsContent value="url" className="mt-4">
                     <Input
-                      name="imageURI"
+                      {...register("imageURI")}
                       type="url"
-                      value={formData.imageURI}
-                      onChange={handleChange}
                       placeholder="https://example.com/image.jpg"
                       className="mb-4"
+                      aria-invalid={errors.imageURI ? "true" : "false"}
                     />
+                    {errors.imageURI && (
+                      <p className="text-red-500 text-sm mt-1">{errors.imageURI.message}</p>
+                    )}
                   </TabsContent>
                 </Tabs>
 
@@ -278,7 +316,7 @@ export default function NewEquipmentPage() {
                       onError={() => {
                         setPreview(null);
                         if (imageTab === "url") {
-                          setFormData(prev => ({ ...prev, imageURI: "" }));
+                          setValue("imageURI", "");
                         }
                       }}
                     />
@@ -297,15 +335,16 @@ export default function NewEquipmentPage() {
                 </label>
                 <Input
                   id="dailyRate"
-                  name="dailyRate"
                   type="number"
                   step="0.001"
                   min="0"
-                  value={formData.dailyRate}
-                  onChange={handleChange}
+                  {...register("dailyRate")}
                   placeholder="0.1"
-                  required
+                  aria-invalid={errors.dailyRate ? "true" : "false"}
                 />
+                {errors.dailyRate && (
+                  <p className="text-red-500 text-sm mt-1">{errors.dailyRate.message}</p>
+                )}
               </div>
 
               {error && (
@@ -334,6 +373,12 @@ export default function NewEquipmentPage() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Modal d'instructions pour l'ajout du réseau */}
+      <NetworkGuideModal 
+        isOpen={showNetworkGuide} 
+        onClose={() => setShowNetworkGuide(false)} 
+      />
     </div>
   );
 } 
